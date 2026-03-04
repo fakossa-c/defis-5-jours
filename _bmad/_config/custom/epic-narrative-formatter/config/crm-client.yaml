@@ -1,0 +1,102 @@
+# CRM Client Configuration
+# epic-narrative-formatter module
+#
+# This file defines the API configuration for communicating
+# with CRM Client. Values are read from environment variables.
+
+# API Connection
+api:
+  # Base URL for CRM API
+  # Development: http://localhost:54321/functions/v1
+  # Staging: https://staging.your-crm.app/functions/v1
+  # Production: https://your-crm.app/functions/v1
+  base_url: ${CRM_API_URL}
+
+  # Authentication
+  auth:
+    type: project_api_key
+    header: X-API-Key
+    key: ${CRM_PROJECT_API_KEY}
+
+  # Request settings
+  timeout_ms: 30000
+  max_retries: 3
+  retry_delay_ms: 1000
+  retry_on_status: [500, 502, 503, 504]
+
+# Endpoints
+endpoints:
+  # Epic ingestion
+  ingest_epic:
+    method: POST
+    path: /ingest-epic
+    description: Create or update an epic narrative
+
+  # Future endpoints (not yet implemented in CRM)
+  # update_epic:
+  #   method: PATCH
+  #   path: /epics/{epic_id}
+  #   description: Update specific fields of an epic
+  #
+  # delete_epic:
+  #   method: DELETE
+  #   path: /epics/{epic_id}
+  #   description: Remove an epic from CRM
+  #
+  # get_epic:
+  #   method: GET
+  #   path: /epics/{epic_id}
+  #   description: Retrieve an epic's current state
+
+# Validation
+validation:
+  # Validate narrative before sending
+  validate_before_export: true
+
+  # Fail if validation errors (vs just warn)
+  fail_on_validation_error: true
+
+  # Check for technical jargon
+  check_jargon: true
+
+  # Verify language matches config
+  verify_language: true
+
+# Rate Limiting
+rate_limit:
+  # Max requests per minute
+  requests_per_minute: 100
+
+  # Delay between batch exports (ms)
+  batch_delay_ms: 500
+
+# Logging
+logging:
+  # Log file location
+  log_file: ${narrative_output_path}/export-log.txt
+
+  # Log level: debug, info, warn, error
+  level: info
+
+  # Include request/response bodies in debug
+  include_bodies: false
+
+  # Mask API key in logs
+  mask_api_key: true
+
+# Error Messages (French)
+error_messages:
+  missing_url: "CRM_API_URL n'est pas configuré. Ajoutez-le dans votre fichier .env"
+  missing_key: "CRM_PROJECT_API_KEY n'est pas configuré. Obtenez votre clé dans CRM > Paramètres > API"
+  invalid_key: "Clé API invalide ou révoquée. Vérifiez ou régénérez-la dans CRM > Paramètres > API"
+  rate_limited: "Trop de requêtes. Attendez quelques secondes et réessayez"
+  server_error: "Erreur serveur CRM. Réessayez dans quelques minutes"
+  network_error: "Impossible de contacter le CRM. Vérifiez que l'URL est correcte et que le serveur est en ligne"
+  invalid_format: "Format de narrative invalide. Vérifiez la structure JSON"
+
+# Documentation
+documentation:
+  api_reference: docs/api-reference.md
+  authentication: docs/authentication.md
+  examples: docs/examples.md
+  troubleshooting: docs/troubleshooting.md

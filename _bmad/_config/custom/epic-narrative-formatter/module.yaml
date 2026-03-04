@@ -1,0 +1,65 @@
+code: epic-narrative-formatter
+name: "Epic Narrative Formatter"
+header: "Transform technical epics into client-friendly narratives"
+subheader: "Parse BMAD epics, transform to narrative format, export to CRM Client via API"
+default_selected: false
+
+# Variables from Core Config inserted:
+## user_name
+## communication_language
+## document_output_language
+## output_folder
+
+# CRM API Configuration
+crm_api_url:
+  prompt: "What is the CRM API URL?"
+  default: "http://localhost:54321/functions/v1"
+  result: "{value}"
+
+crm_project_api_key:
+  prompt:
+    - "What is your CRM Project API Key?"
+    - "You can find this in CRM Client: Settings > API"
+    - "Format: crm_proj_abc123..."
+  required: true
+  result: "{value}"
+
+# Epic Source Configuration
+epic_source_path:
+  prompt: "Where are your BMAD epics located?"
+  default: "{output_folder}/epics/epic-list.md"
+  result: "{project-root}/{value}"
+
+retrospective_path:
+  prompt: "Where are your retrospective files?"
+  default: "{output_folder}/implementation-artifacts"
+  result: "{project-root}/{value}"
+
+# Output Configuration
+narrative_output_path:
+  prompt: "Where should narrative JSON files be stored?"
+  default: ".bmad-temp/narratives"
+  result: "{project-root}/{value}"
+
+# Transformation Settings
+narrative_language:
+  prompt: "What language should narratives be written in?"
+  default: "Français"
+  result: "{value}"
+  single-select:
+    - value: "Français"
+      label: "Français - Client-friendly French"
+    - value: "English"
+      label: "English - Client-friendly English"
+
+tone_style:
+  prompt: "What tone should narratives use?"
+  default: "professional"
+  result: "{value}"
+  single-select:
+    - value: "professional"
+      label: "Professional - Reassuring and expert"
+    - value: "friendly"
+      label: "Friendly - Warm and approachable"
+    - value: "concise"
+      label: "Concise - Direct and to the point"
