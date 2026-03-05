@@ -191,7 +191,7 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
   // ── Initial Phase ──
   if (chatPhase === 'initial') {
     return (
-      <div className="flex flex-1 flex-col justify-center px-4 sm:px-6">
+      <div className="flex flex-1 flex-col px-4 sm:px-6" style={{ justifyContent: 'center', paddingBottom: '15vh' }}>
         <div className="mx-auto flex w-full max-w-[42rem] flex-col items-center gap-6">
           {/* Progress dots only (no labels) */}
           <ProgressBar currentStep={currentStep} hideLabels />
