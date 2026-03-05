@@ -63,7 +63,6 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
 
   const isRateLimited = rateLimitMessage !== null;
 
-  // Derive currentStep from the last assistant message that has a [STEP:N] tag
   const currentStep = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       if (messages[i].role === 'assistant') {
@@ -81,7 +80,7 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
   useEffect(() => {
     if (!hasSentInitial.current && messages.length === 0) {
       hasSentInitial.current = true;
-      sendMessage({ text: 'Bonjour, je suis prêt à commencer le Défi 5 Jours.' });
+      sendMessage({ text: 'Bonjour, je suis pret a commencer le Defi 5 Jours.' });
     }
   }, [messages.length, sendMessage]);
 
@@ -89,7 +88,6 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Process completed assistant messages: notify step change + detect brief
   useEffect(() => {
     if (status === 'streaming' || status === 'submitted') return;
 
@@ -104,11 +102,9 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
       .map((p) => p.text)
       .join('');
 
-    // Notify parent of step change
     const { step } = extractStep(rawContent);
     if (step !== null) onStepChange?.(step);
 
-    // Extract brief and schedule transition
     const brief = extractBrief(rawContent);
     if (brief) {
       briefTransitionRef.current = setTimeout(() => {
@@ -117,7 +113,6 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
     }
   }, [status, messages, onBriefComplete, onStepChange]);
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (briefTransitionRef.current) clearTimeout(briefTransitionRef.current);
@@ -132,12 +127,59 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
     sendMessage({ text });
   }
 
+  // Filter out the initial user message (auto-sent)
+  const visibleMessages = messages.filter(
+    (m, i) => !(i === 0 && m.role === 'user'),
+  );
+
   return (
     <div className="flex flex-1 flex-col">
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-[var(--space-md)] py-[var(--space-md)]" role="log" aria-live="polite">
-        <div className="mx-auto flex max-w-3xl flex-col gap-[var(--space-md)]">
-          {messages.map((message, index) => {
+      <div
+        className="chat-scroll flex-1 overflow-y-auto px-4 py-6 sm:px-6"
+        role="log"
+        aria-live="polite"
+      >
+        <div className="mx-auto flex max-w-3xl flex-col gap-5">
+          {/* Welcome message if no visible messages yet and loading */}
+          {visibleMessages.length === 0 && isLoading && (
+            <div className="msg-enter flex items-center gap-3">
+              <div className="avatar-ring shrink-0" style={{ width: 32, height: 32 }}>
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--accent)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                  }}
+                >
+                  F
+                </div>
+              </div>
+              <div
+                className="glass"
+                style={{
+                  borderRadius: '2px 18px 18px 18px',
+                  padding: '12px 18px',
+                  borderLeft: '3px solid var(--accent)',
+                }}
+              >
+                <span className="typing-dots">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+              </div>
+            </div>
+          )}
+
+          {visibleMessages.map((message, index) => {
             const rawContent = message.parts
               .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
               .map((p) => p.text)
@@ -154,29 +196,42 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
                 isStreaming={
                   status === 'streaming' &&
                   message.role === 'assistant' &&
-                  index === messages.length - 1
+                  index === visibleMessages.length - 1
                 }
+                index={index}
               />
             );
           })}
 
-          {/* Rate limit message - inline amical */}
+          {/* Rate limit message */}
           {rateLimitMessage && (
-            <div className="mx-auto flex items-center gap-[var(--space-sm)] rounded-[var(--radius-sm)] bg-[var(--cream-100)] px-[var(--space-md)] py-[var(--space-sm)] text-[var(--charcoal-900)]">
-              <span className="text-base">&#128336;</span>
-              <span className="flex-1 text-sm">{rateLimitMessage}</span>
+            <div
+              className="animate-scale-in glass mx-auto flex items-center gap-3 px-5 py-3"
+              style={{ borderRadius: 'var(--radius-md)' }}
+            >
+              <span style={{ fontSize: 18 }}>&#128336;</span>
+              <span className="text-sm" style={{ color: 'var(--charcoal-700)' }}>
+                {rateLimitMessage}
+              </span>
             </div>
           )}
 
-          {/* Error banner (non-rate-limit errors only) */}
+          {/* Error banner */}
           {error && !isRateLimited && (
-            <div className="flex items-center gap-[var(--space-sm)] rounded-[var(--radius-sm)] bg-[var(--red-500)] px-[var(--space-md)] py-[var(--space-sm)] text-white">
-              <span className="flex-1 text-sm">Oups, un souci technique. Réessayez.</span>
+            <div
+              className="animate-scale-in flex items-center gap-3 px-5 py-3 text-white"
+              style={{
+                background: 'var(--red-500)',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: '0 4px 16px rgba(239, 68, 68, 0.25)',
+              }}
+            >
+              <span className="flex-1 text-sm">Oups, un souci technique. Reessayez.</span>
               <button
                 onClick={() => regenerate()}
-                className="shrink-0 rounded-[var(--radius-sm)] bg-white/20 px-[var(--space-sm)] py-1 text-sm font-medium hover:bg-white/30"
+                className="shrink-0 rounded-lg bg-white/20 px-3 py-1.5 text-sm font-medium backdrop-blur-sm hover:bg-white/30"
               >
-                Réessayer
+                Reessayer
               </button>
             </div>
           )}
@@ -185,41 +240,65 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
         </div>
       </div>
 
-      {/* Progress bar - between messages and input */}
-      <div className="border-t border-[var(--charcoal-200)] bg-[var(--cream-50)] px-[var(--space-md)] py-[var(--space-xs)]">
+      {/* Progress bar */}
+      <div
+        className="glass border-t"
+        style={{
+          borderColor: 'rgba(212, 207, 200, 0.4)',
+          padding: '6px 16px',
+        }}
+      >
         <div className="mx-auto max-w-3xl">
           <ProgressBar currentStep={currentStep} />
         </div>
       </div>
 
-      {/* Input area - sticky bottom */}
-      <div className="sticky bottom-0 border-t border-[var(--charcoal-200)] bg-[var(--cream-50)] px-[var(--space-md)] py-[var(--space-sm)]">
+      {/* Input area */}
+      <div
+        className="glass sticky bottom-0 border-t"
+        style={{
+          borderColor: 'rgba(212, 207, 200, 0.4)',
+          padding: '12px 16px',
+        }}
+      >
         <form
           onSubmit={handleSubmit}
-          className="mx-auto flex max-w-3xl items-center gap-[var(--space-sm)]"
+          className="mx-auto flex max-w-3xl items-end gap-3"
         >
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Tapez votre message..."
-            className="flex-1 rounded-[var(--radius-full)] border border-[var(--charcoal-200)] bg-white px-[var(--space-md)] py-[var(--space-sm)] text-[15px] outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
-            disabled={isLoading || isRateLimited}
-          />
+          <div className="relative flex-1">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Tapez votre message..."
+              className="chat-input w-full bg-white px-5 py-3 text-[15px] outline-none"
+              style={{
+                borderRadius: 'var(--radius-full)',
+                border: '1px solid var(--charcoal-200)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+              disabled={isLoading || isRateLimited}
+            />
+          </div>
           <button
             type="submit"
             disabled={isLoading || isRateLimited || !input.trim()}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-white transition-opacity disabled:opacity-40"
+            className="send-btn flex shrink-0 items-center justify-center rounded-full text-white disabled:opacity-40"
+            style={{
+              width: 46,
+              height: 46,
+              background: 'var(--accent)',
+              boxShadow: '0 2px 10px var(--accent-light, rgba(249,103,67,0.25))',
+            }}
             aria-label="Envoyer"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="19" x2="12" y2="5" />
-              <polyline points="5 12 12 5 19 12" />
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
             </svg>
           </button>
         </form>
       </div>
 
-      {/* Hidden step tracker for Story 2.3 */}
       <span data-testid="current-step" className="sr-only" aria-hidden="true">
         {currentStep}
       </span>

@@ -4,20 +4,22 @@
   /* Couleurs statiques */
   --cream-50: #FFFDF9;
   --cream-100: #FFF8EF;
+  --cream-200: #FFF3E0;
+  --cream-300: #FFE8C8;
+  --charcoal-50: #F7F6F5;
+  --charcoal-100: #EDEBE8;
   --charcoal-900: #2A2724;
+  --charcoal-800: #3D3935;
   --charcoal-700: #4A453F;
   --charcoal-500: #7D756B;
+  --charcoal-400: #9A9288;
   --charcoal-200: #D4CFC8;
   --emerald-500: #10B981;
+  --emerald-600: #059669;
+  --emerald-50: #ecfdf5;
   --red-500: #EF4444;
 
-  /* Couleurs dynamiques (injectées server-side par page.tsx via React.CSSProperties) */
-  /* Les valeurs par défaut ne sont PAS définies ici pour éviter un flash de couleur.
-     Le fallback coral #F96743 est géré dans params.ts → ensureContrast → page.tsx */
-
-  /* Typographie — shorthands CSS (usage: font: var(--font-h1))
-     Non exposés via @theme car ce sont des shorthands font, pas des font-family.
-     Tailwind gère font-size/weight/line-height via ses propres utilitaires. */
+  /* Typographie */
   --font-display: 700 36px/1.2 var(--font-inter, sans-serif);
   --font-h1: 700 28px/1.3 var(--font-inter, sans-serif);
   --font-h2: 600 22px/1.4 var(--font-inter, sans-serif);
@@ -83,6 +85,106 @@ body {
   color: var(--charcoal-900);
 }
 
+/* ── Blobs ─────────────────────────────────────────────── */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.25;
+  animation: blobMove 14s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes blobMove {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -40px) scale(1.1); }
+  100% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+/* ── Animations ────────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes typing-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 var(--accent); }
+  70% { box-shadow: 0 0 0 6px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+@keyframes progress-fill {
+  from { width: 0%; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-blink { animation: blink 800ms infinite; }
+.animate-slide-up { animation: slide-up 400ms cubic-bezier(.22,1,.36,1) both; }
+.animate-fade-in { animation: fade-in 600ms cubic-bezier(.22,1,.36,1) both; }
+.animate-scale-in { animation: scale-in 500ms cubic-bezier(.22,1,.36,1) both; }
+
+/* Staggered message animations */
+.msg-enter { animation: slide-up 400ms cubic-bezier(.22,1,.36,1) both; }
+
+/* ── Typing indicator ──────────────────────────────────── */
+.typing-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.typing-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: typing-dot 1.4s ease-in-out infinite;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Glassmorphism ─────────────────────────────────────── */
+.glass {
+  background: rgba(255, 253, 249, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-dark {
+  background: rgba(42, 39, 36, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── CTA Button ────────────────────────────────────────── */
 .cta-button {
   transition: transform 150ms ease, box-shadow 150ms ease;
 }
@@ -102,26 +204,90 @@ body {
   }
 }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+/* ── Avatar ring (from CV) ─────────────────────────────── */
+.avatar-ring {
+  padding: 2px;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent, #F96743), var(--accent-light, #FFB09A), var(--accent, #F96743));
+  animation: ringRotate 6s linear infinite;
 }
 
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes ringRotate {
+  to { filter: hue-rotate(15deg); }
 }
 
-.animate-blink {
-  animation: blink 800ms infinite;
+.avatar-ring img {
+  border-radius: 50%;
+  border: 2px solid white;
 }
 
-.animate-slide-up {
-  animation: slide-up 200ms ease-out;
+/* ── Chat input focus glow ─────────────────────────────── */
+.chat-input {
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.chat-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light, rgba(249, 103, 67, 0.15));
+}
+
+/* ── Send button ───────────────────────────────────────── */
+.send-btn {
+  transition: transform 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
+}
+
+.send-btn:not(:disabled):hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px var(--accent-light, rgba(249, 103, 67, 0.3));
+}
+
+.send-btn:not(:disabled):active {
+  transform: scale(0.95);
+}
+
+/* ── Progress steps ────────────────────────────────────── */
+.step-dot {
+  transition: all 300ms cubic-bezier(.22,1,.36,1);
+}
+
+.step-dot.active {
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+/* ── Message hover effect ──────────────────────────────── */
+.message-bubble {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.message-bubble:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Brief card ────────────────────────────────────────── */
+.brief-card {
+  transition: transform 300ms ease, box-shadow 300ms ease;
+}
+
+.brief-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Scrollbar styling ─────────────────────────────────── */
+.chat-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: var(--charcoal-200);
+  border-radius: 4px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--charcoal-400);
 }
