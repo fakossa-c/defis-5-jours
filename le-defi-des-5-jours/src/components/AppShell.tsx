@@ -2,10 +2,9 @@
 
 import { useState, useRef, useEffect, Component } from 'react';
 import type { ReactNode } from 'react';
-import type { AppState, ProspectParams, BriefData } from '@/types';
+import type { ProspectParams } from '@/types';
 import Header from './Header';
 import Chat from './Chat';
-import BriefSummary from './BriefSummary';
 
 class ChatErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
@@ -31,27 +30,11 @@ type AppShellProps = {
 };
 
 export default function AppShell({ params }: AppShellProps) {
-  const [appState, setAppState] = useState<AppState>('chat');
   const [visible, setVisible] = useState(false);
-  const [briefData, setBriefData] = useState<BriefData | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    // Entrance animation
     requestAnimationFrame(() => setVisible(true));
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
   }, []);
-
-  function handleBriefComplete(brief: BriefData) {
-    setBriefData(brief);
-    setVisible(false);
-    timeoutRef.current = setTimeout(() => {
-      setAppState('recap');
-      setVisible(true);
-    }, 500);
-  }
 
   return (
     <div
@@ -97,31 +80,10 @@ export default function AppShell({ params }: AppShellProps) {
 
       {/* Content */}
       <div className="relative z-10 flex flex-1 flex-col">
-        {appState !== 'recap' && <Header company={params.company} />}
-
-        {appState === 'chat' && (
-          <ChatErrorBoundary>
-            <Chat params={params} onBriefComplete={handleBriefComplete} />
-          </ChatErrorBoundary>
-        )}
-
-        {appState === 'recap' && (
-          <div className="flex flex-1 justify-center overflow-y-auto">
-            {briefData ? (
-              <BriefSummary
-                briefData={briefData}
-                company={params.company ?? undefined}
-                contact={params.contact ?? undefined}
-              />
-            ) : (
-              <div className="flex flex-1 items-center justify-center">
-                <p style={{ color: 'var(--charcoal-500)', font: 'var(--font-body)' }}>
-                  R&eacute;capitulatif en cours de pr&eacute;paration...
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        <Header company={params.company} />
+        <ChatErrorBoundary>
+          <Chat params={params} onBriefComplete={() => {}} />
+        </ChatErrorBoundary>
       </div>
     </div>
   );
