@@ -191,23 +191,25 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
   // ── Initial Phase ──
   if (chatPhase === 'initial') {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center px-4">
-        <div className="flex w-full max-w-2xl flex-col items-center gap-6">
-          {/* Progress bar */}
-          <div className="w-full max-w-md">
-            <ProgressBar currentStep={currentStep} />
-          </div>
+      <div className="flex flex-1 flex-col items-center justify-center px-4 sm:px-6">
+        <div className="flex w-full max-w-xl flex-col items-center gap-8">
+          {/* Progress dots only (no labels) */}
+          <ProgressBar currentStep={currentStep} hideLabels />
 
           {/* Title */}
           <h1
-            className="animate-fade-in text-center"
-            style={{
-              font: 'var(--font-h1)',
-              color: 'var(--charcoal-900)',
-            }}
+            className="animate-fade-in text-center text-2xl font-bold sm:text-3xl"
+            style={{ color: 'var(--charcoal-900)' }}
           >
-            Quel projet avez-vous en t&ecirc;te ?
+            Quel projet avez-vous en t&#234;te ?
           </h1>
+
+          {/* Project cards above input */}
+          <ProjectCards
+            onCardClick={handleCardClick}
+            disabled={isLoading || isRateLimited}
+            loadingType={loadingType}
+          />
 
           {/* Textarea */}
           <form onSubmit={handleSubmit} className="w-full">
@@ -219,7 +221,7 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
                 onKeyDown={handleKeyDown}
                 placeholder="Decrivez votre projet..."
                 rows={3}
-                className="chat-input textarea-resize w-full resize-none bg-white px-5 py-4 text-[15px] outline-none"
+                className="chat-input textarea-resize w-full resize-none bg-white px-5 py-4 pr-14 text-[15px] outline-none"
                 style={{
                   borderRadius: 'var(--radius-lg)',
                   border: '1px solid var(--charcoal-200)',
@@ -246,13 +248,6 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
               </button>
             </div>
           </form>
-
-          {/* Project cards */}
-          <ProjectCards
-            onCardClick={handleCardClick}
-            disabled={isLoading || isRateLimited}
-            loadingType={loadingType}
-          />
         </div>
 
         <span data-testid="current-step" className="sr-only" aria-hidden="true">

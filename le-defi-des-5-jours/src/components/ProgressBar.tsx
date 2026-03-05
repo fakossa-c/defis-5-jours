@@ -18,9 +18,10 @@ export function isComplete(currentStep: number, totalSteps: number): boolean {
 interface ProgressBarProps {
   currentStep: number;
   totalSteps?: number;
+  hideLabels?: boolean;
 }
 
-export default function ProgressBar({ currentStep, totalSteps = 5 }: ProgressBarProps) {
+export default function ProgressBar({ currentStep, totalSteps = 5, hideLabels }: ProgressBarProps) {
   const displayStep = Math.max(1, currentStep);
   const complete = isComplete(currentStep, totalSteps);
 
@@ -70,19 +71,21 @@ export default function ProgressBar({ currentStep, totalSteps = 5 }: ProgressBar
               )}
             </div>
 
-            {/* Step label (only on sm+) */}
-            <span
-              className="hidden text-[10px] font-medium sm:inline"
-              style={{
-                color: isCurrent
-                  ? 'var(--charcoal-900)'
-                  : isPast
-                    ? 'var(--emerald-600)'
-                    : 'var(--charcoal-400)',
-              }}
-            >
-              {stepName}
-            </span>
+            {/* Step label (only on sm+ and when not hidden) */}
+            {!hideLabels && (
+              <span
+                className="hidden text-[10px] font-medium sm:inline"
+                style={{
+                  color: isCurrent
+                    ? 'var(--charcoal-900)'
+                    : isPast
+                      ? 'var(--emerald-600)'
+                      : 'var(--charcoal-400)',
+                }}
+              >
+                {stepName}
+              </span>
+            )}
 
             {/* Connector line */}
             {stepNum < totalSteps && (
