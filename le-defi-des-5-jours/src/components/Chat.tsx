@@ -192,7 +192,7 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
   if (chatPhase === 'initial') {
     return (
       <div className="flex flex-1 flex-col justify-center px-4 sm:px-6">
-        <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-8">
+        <div className="mx-auto flex w-full max-w-[36rem] flex-col items-center gap-8">
           {/* Progress dots only (no labels) */}
           <ProgressBar currentStep={currentStep} hideLabels />
 
@@ -266,7 +266,7 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
         role="log"
         aria-live="polite"
       >
-        <div className="mx-auto flex max-w-3xl flex-col gap-5">
+        <div className="mx-auto flex max-w-[48rem] flex-col gap-5">
           {visibleMessages.length === 0 && isLoading && (
             <div className="msg-enter flex items-center gap-3">
               <div className="avatar-ring shrink-0" style={{ width: 32, height: 32 }}>
@@ -373,7 +373,7 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
           padding: '6px 16px',
         }}
       >
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-[48rem]">
           <ProgressBar currentStep={currentStep} />
         </div>
       </div>
@@ -388,7 +388,7 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
       >
         <form
           onSubmit={handleSubmit}
-          className="mx-auto flex max-w-3xl items-end gap-3"
+          className="mx-auto flex max-w-[48rem] items-end gap-3"
         >
           <div className="relative flex-1">
             <textarea

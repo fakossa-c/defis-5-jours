@@ -82,7 +82,7 @@ export default function BriefSummary({ briefData, company, contact }: BriefSumma
     : 'Fakossa a recu votre brief. Il revient vers vous sous 24h avec une proposition.';
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto px-4 py-8 sm:px-6">
+    <div className="relative w-full max-w-[42rem] mx-auto px-4 py-8 sm:px-6">
       {/* Background blobs */}
       <div
         className="blob"

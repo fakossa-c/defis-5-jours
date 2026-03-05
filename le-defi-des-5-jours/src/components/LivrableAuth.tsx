@@ -50,7 +50,7 @@ export default function LivrableAuth({ company: initialCompany, initialAuthentic
           <h1 className="text-lg font-semibold">{sessionCompany || company}</h1>
           <p className="text-sm" style={{ color: 'var(--charcoal-500, #737373)' }}>Livrable — Défi 5 Jours</p>
         </header>
-        <section className="flex-1 px-6 py-8 max-w-3xl mx-auto w-full">
+        <section className="flex-1 px-6 py-8 max-w-[48rem] mx-auto w-full">
           <div style={{ color: 'var(--charcoal-700, #404040)' }}>
             <h2 className="text-xl font-semibold mb-4">Votre livrable</h2>
             <p>Le contenu de votre livrable sera affiché ici en lecture seule.</p>
