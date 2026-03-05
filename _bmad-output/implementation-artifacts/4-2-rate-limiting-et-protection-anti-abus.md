@@ -1,6 +1,6 @@
 # Story 4.2: Rate Limiting & Protection Anti-Abus
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -50,50 +50,50 @@ Then les Maps sont reinitialisees (vides)
 ## Tasks / Subtasks
 
 ### Tache 4.2.1 — Creer le module src/lib/rate-limit.ts
-- [ ] Creer `src/lib/rate-limit.ts`
-- [ ] Definir la constante `MAX_CONVERSATIONS_PER_HOUR = 10`
-- [ ] Definir la constante `WINDOW_MS = 3_600_000` (1 heure en millisecondes)
-- [ ] Implementer `requestLog: Map<string, number[]>` — cle = IP, valeur = tableau de timestamps
-- [ ] Exporter `checkRateLimit(ip: string): { allowed: boolean, remaining: number, resetAt: number }`
+- [x] Creer `src/lib/rate-limit.ts`
+- [x] Definir la constante `MAX_CONVERSATIONS_PER_HOUR = 10`
+- [x] Definir la constante `WINDOW_MS = 3_600_000` (1 heure en millisecondes)
+- [x] Implementer `requestLog: Map<string, number[]>` — cle = IP, valeur = tableau de timestamps
+- [x] Exporter `checkRateLimit(ip: string): { allowed: boolean, remaining: number, resetAt: number }`
   - Recuperer les timestamps pour cette IP
   - Filtrer pour ne garder que ceux dans la fenetre (Date.now() - WINDOW_MS)
   - Mettre a jour la Map avec les timestamps filtres
   - Si nombre < MAX : ajouter le timestamp actuel, retourner `{ allowed: true, remaining: MAX - count - 1, resetAt }`
   - Si nombre >= MAX : retourner `{ allowed: false, remaining: 0, resetAt: oldestTimestamp + WINDOW_MS }`
-- [ ] Exporter `getRateLimitHeaders(result): Record<string, string>` pour les headers de reponse (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset)
+- [x] Exporter `getRateLimitHeaders(result): Record<string, string>` pour les headers de reponse (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset)
 
 ### Tache 4.2.2 — Integrer le rate limiting dans /api/chat
-- [ ] Modifier `src/app/api/chat/route.ts`
-- [ ] Au debut du handler POST, extraire l'IP : `request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'`
-- [ ] Appeler `checkRateLimit(ip)`
-- [ ] Si `allowed === false` : retourner `NextResponse.json({ error: "Beaucoup de demandes, revenez dans quelques minutes", code: "RATE_LIMIT", retryable: false }, { status: 429 })` avec les headers rate limit
-- [ ] Si `allowed === true` : continuer le traitement normal (streamText)
-- [ ] Ajouter les headers rate limit a toutes les reponses (200 et 429)
+- [x] Modifier `src/app/api/chat/route.ts`
+- [x] Au debut du handler POST, extraire l'IP : `request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'`
+- [x] Appeler `checkRateLimit(ip)`
+- [x] Si `allowed === false` : retourner `NextResponse.json({ error: "Beaucoup de demandes, revenez dans quelques minutes", code: "RATE_LIMIT", retryable: false }, { status: 429 })` avec les headers rate limit
+- [x] Si `allowed === true` : continuer le traitement normal (streamText)
+- [x] Ajouter les headers rate limit a toutes les reponses (200 et 429)
 
 ### Tache 4.2.3 — Creer la verification de doublon dans /api/brief
-- [ ] Modifier ou creer le module de stockage des briefs (ex: `src/lib/brief-store.ts`)
-- [ ] Implementer `submittedCompanies: Map<string, boolean>` — cle = nom societe normalise (lowercase, trim)
-- [ ] Exporter `checkDuplicateSubmission(company: string): boolean` — retourne true si deja soumis
-- [ ] Exporter `markCompanySubmitted(company: string): void` — enregistre la soumission
-- [ ] Integrer dans `src/app/api/brief/route.ts` :
+- [x] Modifier ou creer le module de stockage des briefs (ex: `src/lib/brief-store.ts`)
+- [x] Implementer `submittedCompanies: Map<string, boolean>` — cle = nom societe normalise (lowercase, trim)
+- [x] Exporter `checkDuplicateSubmission(company: string): boolean` — retourne true si deja soumis
+- [x] Exporter `markCompanySubmitted(company: string): void` — enregistre la soumission
+- [x] Integrer dans `src/app/api/brief/route.ts` : _(débloqué — Story 3.2 done)_
   - Avant le traitement, appeler `checkDuplicateSubmission(company)`
   - Si doublon : retourner 409 `{ error: "Un brief a deja ete soumis pour [Entreprise]", code: "DUPLICATE_SUBMISSION", retryable: false }`
   - Si nouveau : appeler `markCompanySubmitted(company)` apres traitement reussi
 
 ### Tache 4.2.4 — Afficher le message de rate limit dans Chat.tsx
-- [ ] Modifier `src/components/Chat.tsx`
-- [ ] Detecter les reponses avec statut 429 dans le handler d'erreur de `useChat()`
-- [ ] Afficher un message inline amical dans la zone de chat : "Beaucoup de demandes, revenez dans quelques minutes"
-- [ ] Style : bulle systeme centree, bg `cream-100`, texte `charcoal-900`, icone horloge optionnelle
-- [ ] Ne pas afficher le bandeau d'erreur rouge pour les 429 (message inline a la place)
-- [ ] Desactiver l'input temporairement quand rate limited
+- [x] Modifier `src/components/Chat.tsx`
+- [x] Detecter les reponses avec statut 429 dans le handler d'erreur de `useChat()`
+- [x] Afficher un message inline amical dans la zone de chat : "Beaucoup de demandes, revenez dans quelques minutes"
+- [x] Style : bulle systeme centree, bg `cream-100`, texte `charcoal-900`, icone horloge optionnelle
+- [x] Ne pas afficher le bandeau d'erreur rouge pour les 429 (message inline a la place)
+- [x] Desactiver l'input temporairement quand rate limited
 
 ### Tache 4.2.5 — Afficher le message de doublon dans BriefSummary.tsx
-- [ ] Modifier `src/components/BriefSummary.tsx` (ou le composant de soumission de brief)
-- [ ] Detecter les reponses avec statut 409 lors de la soumission
-- [ ] Afficher le message "Un brief a deja ete soumis pour [Entreprise]" inline
-- [ ] Style : texte orange/warning, pas de bandeau d'erreur intrusif
-- [ ] Desactiver le bouton de soumission apres detection de doublon
+- [x] Modifier `src/components/BriefSummary.tsx` _(débloqué — Story 3.1 done)_
+- [x] Detecter les reponses avec statut 409 lors de la soumission
+- [x] Afficher le message "Un brief a deja ete soumis pour [Entreprise]" inline
+- [x] Style : texte orange (#F97316), pas de bandeau d'erreur intrusif
+- [x] Soumission auto via useEffect — pas de bouton re-submit à désactiver
 
 ## Dev Notes
 
@@ -230,9 +230,31 @@ src/
 ## Dev Agent Record
 
 ### Agent Model Used
+Claude Opus 4.6
 
 ### Debug Log References
+- Lint error: `react-hooks/set-state-in-effect` — corrigé en remplaçant `useState` + `useEffect` par `useMemo` pour dériver `rateLimitMessage`
+- Dépendances manquantes : `/api/brief/route.ts` et `BriefSummary.tsx` n'existent pas encore (Epic 3 non implémenté) — tâches 4.2.3 (intégration API) et 4.2.5 bloquées
 
 ### Completion Notes List
+- ✅ Tâche 4.2.1 : Module `rate-limit.ts` créé avec sliding window, constantes exportées, `checkRateLimit()` et `getRateLimitHeaders()`
+- ✅ Tâche 4.2.2 : Rate limiting intégré dans `/api/chat` — extraction IP, vérification avant traitement, headers sur toutes les réponses (200, 400, 429, 503)
+- ✅ Tâche 4.2.3 (complet) : `brief-store.ts` avec `checkDuplicateSubmission()`, `markCompanySubmitted()`. Intégré dans `/api/brief/route.ts` — vérification doublon avant envoi (409), marquage après envoi réussi.
+- ✅ Tâche 4.2.4 : `Chat.tsx` gère le 429 avec message inline amical (bulle cream-100, icône horloge), masque le bandeau rouge pour les rate limits, désactive l'input
+- ✅ Tâche 4.2.5 : `BriefSummary.tsx` détecte le 409, affiche "Un brief a déjà été soumis pour [Entreprise]" en orange (#F97316), non intrusif
+
+### Change Log
+- 2026-03-04 : Implémentation partielle — tâches 4.2.1 à 4.2.4 complétées, tâches 4.2.3 (intégration) et 4.2.5 bloquées par dépendances Epic 3
+- 2026-03-05 : Tâches 4.2.3 (intégration API brief) et 4.2.5 (message doublon BriefSummary) complétées — Story complète
+- 2026-03-05 : Review Follow-ups (AI) — H2: supprimé `runtime = 'edge'` (Maps en mémoire non partagées entre edge workers) ; M1: détection 429 via status HTTP dans custom fetch au lieu de string matching ; M3: `storeBriefCredentials`/`verifyBriefCredentials` utilisent désormais `normalizeCompany` ; H1+M2: tests credentials ajoutés dans `brief-store.test.ts` — 99 tests passent
 
 ### File List
+- `le-defi-des-5-jours/src/lib/rate-limit.ts` — NOUVEAU — Module rate limiting sliding window
+- `le-defi-des-5-jours/src/lib/brief-store.ts` — MODIFIÉ — Ajout détection doublons (checkDuplicateSubmission, markCompanySubmitted, normalizeCompany)
+- `le-defi-des-5-jours/src/app/api/chat/route.ts` — MODIFIÉ — Intégration rate limiting (extraction IP, vérification, headers)
+- `le-defi-des-5-jours/src/components/Chat.tsx` — MODIFIÉ — Gestion 429 inline (rateLimitMessage via useMemo, désactivation input)
+- `le-defi-des-5-jours/src/app/api/brief/route.ts` — MODIFIÉ — Intégration détection doublon (409 si duplicate, markCompanySubmitted après succès)
+- `le-defi-des-5-jours/src/components/BriefSummary.tsx` — MODIFIÉ — Détection 409, message warning orange inline
+- `le-defi-des-5-jours/src/app/api/brief/__tests__/route.test.ts` — NOUVEAU — Tests unitaires route API brief
+- `le-defi-des-5-jours/src/lib/__tests__/rate-limit.test.ts` — NOUVEAU — Tests unitaires rate limiting
+- `le-defi-des-5-jours/src/lib/__tests__/brief-store.test.ts` — NOUVEAU — Tests unitaires brief store (doublons)

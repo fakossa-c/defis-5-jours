@@ -2,10 +2,11 @@
 
 import { useState, useRef, useEffect, Component } from 'react';
 import type { ReactNode } from 'react';
-import type { AppState, ProspectParams } from '@/types';
+import type { AppState, ProspectParams, BriefData } from '@/types';
 import Header from './Header';
 import Landing from './Landing';
 import Chat from './Chat';
+import BriefSummary from './BriefSummary';
 
 // M4 — Error boundary minimal pour isoler les crashs de Chat
 class ChatErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -34,6 +35,7 @@ type AppShellProps = {
 export default function AppShell({ params }: AppShellProps) {
   const [appState, setAppState] = useState<AppState>('landing');
   const [visible, setVisible] = useState(true);
+  const [briefData, setBriefData] = useState<BriefData | null>(null);
   // M1 — stocker le timeout pour cleanup au démontage
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -51,6 +53,15 @@ export default function AppShell({ params }: AppShellProps) {
     }, 400);
   }
 
+  function handleBriefComplete(brief: BriefData) {
+    setBriefData(brief);
+    setVisible(false);
+    timeoutRef.current = setTimeout(() => {
+      setAppState('recap');
+      setVisible(true);
+    }, 400);
+  }
+
   return (
     <div
       style={{
@@ -61,7 +72,7 @@ export default function AppShell({ params }: AppShellProps) {
         minHeight: '100vh',
       }}
     >
-      <Header appState={appState} company={params.company} />
+      {appState !== 'recap' && <Header appState={appState} company={params.company} />}
       {appState === 'landing' && (
         <div className="flex flex-1 justify-center">
           <Landing params={params} onStart={handleStart} />
@@ -70,15 +81,25 @@ export default function AppShell({ params }: AppShellProps) {
       {appState === 'chat' && (
         // M4 — isolation des crashs Chat
         <ChatErrorBoundary>
-          <Chat params={params} />
+          <Chat params={params} onBriefComplete={handleBriefComplete} />
         </ChatErrorBoundary>
       )}
-      {/* M3 — état recap géré explicitement (Story 3.1) */}
+      {/* M3 — état recap (Story 3.1) */}
       {appState === 'recap' && (
-        <div className="flex flex-1 items-center justify-center px-[var(--space-md)]">
-          <p style={{ color: 'var(--charcoal-500)', font: 'var(--font-body)' }}>
-            Récapitulatif en cours de chargement…
-          </p>
+        <div className="flex flex-1 justify-center overflow-y-auto">
+          {briefData ? (
+            <BriefSummary
+              briefData={briefData}
+              company={params.company ?? undefined}
+              contact={params.contact ?? undefined}
+            />
+          ) : (
+            <div className="flex flex-1 items-center justify-center">
+              <p style={{ color: 'var(--charcoal-500)', font: 'var(--font-body)' }}>
+                Récapitulatif en cours de préparation…
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

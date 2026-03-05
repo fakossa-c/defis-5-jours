@@ -1,6 +1,6 @@
 # Story 3.1: Recapitulatif du Brief & Confirmation
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -59,117 +59,56 @@ So that je sache ce que Fakossa va recevoir.
 
 ### Tache 1 : Creer le composant BriefSummary (AC-3.1.1, AC-3.1.2)
 
-1. Creer le fichier `src/components/BriefSummary.tsx`
-2. Definir les props du composant :
-   ```typescript
-   type BriefSummaryProps = {
-     briefData: BriefData;
-     company?: string;
-     contact?: string;
-   };
-   ```
-3. Implementer la carte principale avec les styles :
-   - Fond : `bg-[var(--cream-100)]` ou equivalent Tailwind (`#FFF8EF`)
-   - Ombre : `shadow-md` (0 4px 12px rgba(42,39,36,.08))
-   - Border-radius : 20px (`rounded-[20px]`)
-4. Afficher le titre "BRIEF PROJET -- [Entreprise]" en utilisant `company` ou "Votre entreprise" par defaut
-5. Implementer le mapping des sections BriefData vers les libelles francais :
-   ```typescript
-   const sectionLabels: Record<string, string> = {
-     problem: 'Probleme',
-     users: 'Utilisateurs cibles',
-     current_solution: 'Solution actuelle',
-     desired_outcome: 'Resultat attendu',
-     five_day_scope: 'Perimetre 5 jours',
-     suggested_deliverable: 'Livrable suggere',
-   };
-   ```
-6. Rendre chaque section avec un titre en gras et le contenu en texte lisible
-7. Ne pas afficher les sections vides (filtrer les champs vides ou undefined)
+- [x] 1. Creer le fichier `src/components/BriefSummary.tsx`
+- [x] 2. Definir les props du composant
+- [x] 3. Implementer la carte principale avec les styles (cream-100, shadow-md, rounded-[20px])
+- [x] 4. Afficher le titre "BRIEF PROJET -- [Entreprise]" avec fallback "Votre entreprise"
+- [x] 5. Implementer le mapping des sections BriefData vers les libelles francais
+- [x] 6. Rendre chaque section avec un titre en gras et le contenu en texte lisible
+- [x] 7. Ne pas afficher les sections vides
 
 ### Tache 2 : Implementer l'animation fade-in (AC-3.1.1)
 
-1. Utiliser un state React pour gerer l'opacite initiale a 0
-2. Appliquer la transition CSS : `transition-opacity duration-[400ms] ease-out`
-3. Passer l'opacite a 1 au montage du composant via `useEffect` (exception justifiee : animation de montage)
-4. Le titre "Brief pret !" doit etre affiche en couleur `emerald-500` (`#10B981`)
+- [x] 1. Utiliser un state React pour gerer l'opacite initiale a 0
+- [x] 2. Appliquer la transition CSS : `transition 400ms ease-out`
+- [x] 3. Passer l'opacite a 1 au montage du composant via `useEffect`
+- [x] 4. Le titre "Brief pret !" est affiche en couleur `emerald-500`
 
 ### Tache 3 : Implementer le message de confirmation (AC-3.1.3)
 
-1. Ajouter la logique de personnalisation :
-   ```typescript
-   const destinataire = contact ? contact : 'vous';
-   const message = `Fakossa a recu votre brief. Il revient vers ${destinataire} sous 24h avec une proposition.`;
-   ```
-2. Afficher le message sous la carte du brief
-3. Styler le message avec une couleur charcoal-900 et une taille de texte lisible
+- [x] 1. Ajouter la logique de personnalisation avec fallback "vous"
+- [x] 2. Afficher le message sous la carte du brief
+- [x] 3. Styler avec charcoal-700 et var(--font-body)
 
 ### Tache 4 : Implementer le bouton CTA Calendly (AC-3.1.4)
 
-1. Ajouter un bouton/lien "Prendre RDV directement" avec une fleche
-2. Styler avec la couleur accent dynamique (ou emerald-500 par defaut)
-3. Configurer le lien :
-   ```tsx
-   <a
-     href={CALENDLY_URL}
-     target="_blank"
-     rel="noopener noreferrer"
-     className="..."
-   >
-     Prendre RDV directement →
-   </a>
-   ```
-4. L'URL Calendly doit etre definie comme constante ou variable d'environnement (`NEXT_PUBLIC_CALENDLY_URL`)
+- [x] 1. Ajouter le lien "Prendre RDV directement →"
+- [x] 2. Styler avec la couleur accent dynamique
+- [x] 3. Configurer `target="_blank"` et `rel="noopener noreferrer"`
+- [x] 4. URL via `NEXT_PUBLIC_CALENDLY_URL` avec fallback
 
 ### Tache 5 : Declencher l'envoi du brief par email (AC-3.1.2)
 
-1. Au montage du composant, declencher un `POST /api/brief` avec les donnees :
-   ```typescript
-   useEffect(() => {
-     const sendBrief = async () => {
-       try {
-         await fetch('/api/brief', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({
-             brief: briefData,
-             metadata: {
-               company: company || briefData.company,
-               contact: contact || briefData.contact,
-               sector: briefData.sector,
-               source: 'chat',
-               timestamp: new Date().toISOString(),
-             },
-           }),
-         });
-       } catch (error) {
-         console.error('Erreur envoi brief:', error);
-       }
-     };
-     sendBrief();
-   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-   ```
-2. L'UX est optimiste : le recapitulatif est affiche immediatement, l'email est envoye en arriere-plan
-3. En cas d'echec de l'envoi, le recapitulatif reste visible (pas de blocage UX)
+- [x] 1. Declencher `POST /api/brief` au montage via useEffect
+- [x] 2. UX optimiste — le recapitulatif est affiche immediatement
+- [x] 3. Echec silencieux avec console.error uniquement
 
 ### Tache 6 : Responsive mobile (AC-3.1.5)
 
-1. Appliquer les classes Tailwind responsives :
-   - Mobile : `w-full px-4`
-   - Desktop : `max-w-2xl mx-auto`
-2. Verifier que les sections sont lisibles sur petits ecrans
-3. Le bouton CTA doit etre en pleine largeur sur mobile
+- [x] 1. `w-full px-4` mobile / `max-w-2xl mx-auto` desktop
+- [x] 2. Sections lisibles sur petits ecrans
+- [x] 3. Bouton CTA pleine largeur sur mobile (via `.cta-button`)
 
 ### Tache 7 : Validation finale (toutes AC)
 
-1. Verifier le fade-in de 400ms a l'affichage du composant
-2. Verifier que toutes les sections du brief sont affichees avec les bons libelles
-3. Verifier la personnalisation du message de confirmation (avec et sans contact)
-4. Verifier que le lien Calendly s'ouvre dans un nouvel onglet
-5. Verifier le rendu mobile (carte pleine largeur, sections lisibles)
-6. Verifier que `POST /api/brief` est appele au montage
-7. `pnpm tsc --noEmit` -- zero erreur TypeScript
-8. `pnpm lint` -- aucune erreur ESLint
+- [x] 1. Fade-in 400ms implementé
+- [x] 2. Toutes les sections affichées avec bons libellés
+- [x] 3. Message de confirmation personnalisé (avec/sans contact)
+- [x] 4. Lien Calendly dans un nouvel onglet
+- [x] 5. Rendu mobile responsive
+- [x] 6. `POST /api/brief` appelé au montage
+- [x] 7. `pnpm tsc --noEmit` — zéro erreur TypeScript ✅
+- [x] 8. `pnpm lint` — aucune erreur ESLint ✅
 
 ## Dev Notes
 
@@ -271,8 +210,45 @@ type BriefSummaryProps = {
 
 ### Agent Model Used
 
+claude-sonnet-4-6
+
 ### Debug Log References
+
+Aucun blocage rencontré.
 
 ### Completion Notes List
 
+- Composant `BriefSummary.tsx` créé avec fade-in 400ms via AppShell, mapping des 6 sections BriefData, message de confirmation personnalisé et CTA Calendly
+- Appel optimiste `POST /api/brief` au montage — UX non bloquée en cas d'échec (Story 3.2 créera la route)
+- Valeurs initiales capturées via `useRef` pour l'envoi — supprime le `eslint-disable` fragile
+- `AppShell.tsx` mis à jour : Header masqué en recap, fallback loading visible, BriefSummary rendu
+- `.gitignore` corrigé : exception `!.env.example` ajoutée pour permettre le commit du template
+- `.env.example` mis à jour avec `NEXT_PUBLIC_CALENDLY_URL`
+- Code review adversarial effectué : H1, H2, M1, M2, M3, M4 corrigés
+- `pnpm tsc --noEmit` : 0 erreur | `pnpm lint` : 0 erreur
+
 ### File List
+
+- `le-defi-des-5-jours/src/components/BriefSummary.tsx` (créé)
+- `le-defi-des-5-jours/src/components/AppShell.tsx` (modifié)
+- `le-defi-des-5-jours/.env.example` (modifié)
+- `le-defi-des-5-jours/.gitignore` (modifié — exception .env.example)
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` (modifié — statut 3.1)
+- `_bmad-output/implementation-artifacts/3-1-recapitulatif-du-brief-et-confirmation.md` (modifié — story file)
+
+## Senior Developer Review (AI)
+
+**Date :** 2026-03-04
+**Outcome :** Changes Requested → Corrigé
+**Action Items :**
+- [x] [High] Header non masqué en état recap (UX spec: "recap (masqué)") — AppShell.tsx:75
+- [x] [High] Double animation opacity (AppShell + BriefSummary) — BriefSummary.tsx:35-38
+- [x] [Medium] .gitignore: .env* trop large, .env.example jamais commité — .gitignore:34
+- [x] [Medium] Fallback silencieux briefData===null en état recap — AppShell.tsx:88
+- [x] [Medium] Story File List incomplète (sprint-status.yaml, story file manquants)
+- [x] [Medium] eslint-disable react-hooks/exhaustive-deps fragile — BriefSummary.tsx:63
+
+## Change Log
+
+- 2026-03-04 : Implémentation Story 3.1 — Composant BriefSummary créé, AppShell mis à jour pour l'état recap
+- 2026-03-04 : Code review — 2 High, 4 Medium corrigés (animation, header, gitignore, fallback, eslint)

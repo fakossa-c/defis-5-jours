@@ -1,6 +1,6 @@
 # Story 1.1: Initialisation du projet Next.js
 
-Status: review
+Status: done
 
 ## Story
 
@@ -20,22 +20,23 @@ So that la base technique est prête pour le développement de toutes les featur
 ### AC-1.1.2 : Installation des dépendances additionnelles
 
 - **Given** le projet est initialisé
-- **When** la commande `pnpm add ai @ai-sdk/google resend` est exécutée
-- **Then** les packages `ai`, `@ai-sdk/google` et `resend` apparaissent dans `package.json` sous `dependencies`
+- **When** la commande `pnpm add ai @ai-sdk/google @ai-sdk/react resend` est exécutée
+- **Then** les packages `ai`, `@ai-sdk/google`, `@ai-sdk/react` et `resend` apparaissent dans `package.json` sous `dependencies`
 - **And** la compilation se termine sans erreur
 
 ### AC-1.1.3 : Fichier .env.example créé avec les clés requises
 
 - **Given** le projet est initialisé
 - **When** le fichier `.env.example` est créé à la racine
-- **Then** il contient `GOOGLE_GENERATIVE_AI_API_KEY=`, `RESEND_API_KEY=`, `NOTIFICATION_EMAIL=` sans valeurs renseignées
+- **Then** il contient `GOOGLE_GENERATIVE_AI_API_KEY=`, `RESEND_API_KEY=`, `NOTIFICATION_EMAIL=`, `NEXT_PUBLIC_CALENDLY_URL=` sans valeurs renseignées
 - **And** `.env.local` est présent dans `.gitignore`
+- **And** `.env.example` est commité et suivi par git (via l'exception `!.env.example` dans `.gitignore`)
 
 ### AC-1.1.4 : Fichier de types centralisé créé et importable
 
 - **Given** le projet est initialisé
 - **When** le fichier `src/types/index.ts` est créé
-- **Then** les types `ProspectParams`, `BriefData`, `AppState` et `ApiError` sont exportés et importables via `@/types`
+- **Then** les types `ProspectParams`, `BriefData`, `BriefMetadata`, `AppState` et `ApiError` sont exportés et importables via `@/types`
 
 ## Tasks / Subtasks
 
@@ -45,8 +46,8 @@ So that la base technique est prête pour le développement de toutes les featur
 - [x] Vérifier la structure générée : `src/app/layout.tsx`, `src/app/page.tsx`, `src/app/globals.css`
 
 ### Tâche 2 : Installer les dépendances additionnelles (AC-1.1.2)
-- [x] Exécuter `pnpm add ai @ai-sdk/google resend`
-- [x] Vérifier dans `package.json` la présence des trois packages dans `dependencies`
+- [x] Exécuter `pnpm add ai @ai-sdk/google @ai-sdk/react resend`
+- [x] Vérifier dans `package.json` la présence des quatre packages dans `dependencies`
 - [x] Exécuter `pnpm tsc --noEmit` pour confirmer zéro erreur TypeScript
 
 ### Tâche 3 : Créer le fichier .env.example (AC-1.1.3)
@@ -55,7 +56,7 @@ So that la base technique est prête pour le développement de toutes les featur
 
 ### Tâche 4 : Créer le fichier de types centralisé (AC-1.1.4)
 - [x] Créer le répertoire `src/types/`
-- [x] Créer `src/types/index.ts` avec `ProspectParams`, `BriefData`, `AppState`, `ApiError`
+- [x] Créer `src/types/index.ts` avec `ProspectParams`, `BriefData`, `BriefMetadata`, `AppState`, `ApiError`
 - [x] Vérifier l'import via `@/types` avec `pnpm tsc --noEmit`
 
 ### Tâche 5 : Préparer la structure de dossiers (préparation stories suivantes)
@@ -76,22 +77,25 @@ So that la base technique est prête pour le développement de toutes les featur
 - **TypeScript** en mode strict (`"strict": true`)
 - **Tailwind CSS 4.2** — configuration via `@theme` dans `globals.css` (pas de `tailwind.config.ts`)
 - **pnpm** comme gestionnaire de paquets exclusif
-- **Vercel AI SDK 6** (`ai` + `@ai-sdk/google` 3.x)
+- **Vercel AI SDK 6** (`ai` + `@ai-sdk/google` 3.x + `@ai-sdk/react` 3.x pour les hooks React)
 - **Resend 6.9** pour l'envoi d'emails
+- **Vitest 4.x** comme framework de tests unitaires (scripts `test` et `test:watch` dans `package.json`)
 
 ### Modèle IA
 - Utiliser **Gemini 2.5 Flash** (PAS Gemini 2.0 Flash qui est déprécié en juin 2026)
 
 ### Types détaillés
 
+> **Note :** `ProspectParams` utilise `string | null` (explicitement nullable) plutôt que `?: string` (optionnel). Ce choix force les appelants à passer `null` explicitement — plus clair pour le parsing des query params URL. `color` est non-nullable car toujours fourni avec une valeur par défaut.
+
 ```typescript
 export type ProspectParams = {
-  company?: string;
-  role?: string;
-  sector?: string;
-  color?: string;
-  contact?: string;
-  source?: string;
+  company: string | null;
+  role: string | null;
+  sector: string | null;
+  color: string;           // toujours présent, défaut fourni par le caller
+  contact: string | null;
+  source: string | null;
 };
 
 export type BriefData = {
@@ -105,6 +109,14 @@ export type BriefData = {
   five_day_scope: string;
   suggested_deliverable: string;
   notes: string;
+};
+
+export type BriefMetadata = {
+  company: string;
+  contact: string;
+  sector: string;
+  source: string;
+  timestamp: string;
 };
 
 export type AppState = 'landing' | 'chat' | 'recap';
@@ -174,9 +186,12 @@ Claude Opus 4.6
 
 - Projet Next.js 16.1.6 initialisé avec `create-next-app` (TypeScript strict, Tailwind CSS 4.2.1, ESLint, App Router, src dir)
 - React Compiler désactivé (non requis par l'architecture, gain négligeable pour 6 composants)
-- Dépendances installées : ai@6.0.111, @ai-sdk/google@3.0.37, resend@6.9.3
-- .env.example créé avec GOOGLE_GENERATIVE_AI_API_KEY, RESEND_API_KEY, NOTIFICATION_EMAIL
-- Types centralisés créés : ProspectParams, BriefData, AppState, ApiError dans src/types/index.ts
+- Dépendances installées : ai@6.0.111, @ai-sdk/google@3.0.37, @ai-sdk/react@3.0.113, resend@6.9.3
+- Vitest 4.0.18 ajouté en devDependency avec scripts `test` et `test:watch` pour les stories suivantes
+- .env.example créé avec GOOGLE_GENERATIVE_AI_API_KEY, RESEND_API_KEY, NOTIFICATION_EMAIL, NEXT_PUBLIC_CALENDLY_URL
+- Types centralisés créés : ProspectParams, BriefData, BriefMetadata, AppState, ApiError dans src/types/index.ts
+  - ProspectParams utilise `string | null` (explicitement nullable) et non `?: string`
+  - BriefMetadata ajouté pour le contexte de l'envoi email (company, contact, sector, source, timestamp)
 - Structure préparée : src/components/, src/lib/ avec .gitkeep
 - .gitignore racine ajouté pour résoudre le warning Git (node_modules ignoré globalement)
 - Validation finale : build OK, lint OK, tsc OK
@@ -185,6 +200,9 @@ Claude Opus 4.6
 
 - le-defi-des-5-jours/ (projet complet généré par create-next-app)
 - le-defi-des-5-jours/.env.example
+- le-defi-des-5-jours/.gitignore
+- le-defi-des-5-jours/package.json
+- le-defi-des-5-jours/tsconfig.json
 - le-defi-des-5-jours/src/types/index.ts
 - le-defi-des-5-jours/src/components/.gitkeep
 - le-defi-des-5-jours/src/lib/.gitkeep

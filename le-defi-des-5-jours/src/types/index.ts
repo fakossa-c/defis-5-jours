@@ -20,6 +20,14 @@ export type BriefData = {
   notes: string;
 };
 
+export type BriefMetadata = {
+  company: string;
+  contact: string;
+  sector: string;
+  source: string;
+  timestamp: string;
+};
+
 export type AppState = 'landing' | 'chat' | 'recap';
 
 export type ApiError = {

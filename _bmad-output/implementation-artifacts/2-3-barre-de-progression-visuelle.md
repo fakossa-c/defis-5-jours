@@ -1,6 +1,6 @@
 # Story 2.3: Barre de Progression Visuelle
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -50,38 +50,38 @@ Then la couleur de remplissage passe brièvement à emerald-500
 ## Tasks / Subtasks
 
 ### Tâche 2.3.1 — Créer le composant ProgressBar.tsx
-- [ ] Créer `src/components/ProgressBar.tsx`
-- [ ] Définir les props : `{ currentStep: number; totalSteps?: number }` (default totalSteps = 5)
-- [ ] Définir le tableau des noms d'étapes : `['Problème', 'Contexte', 'Existant', 'Résultat', 'Priorité']`
-- [ ] Calculer la largeur de remplissage : `(currentStep / totalSteps) * 100 + '%'`
-- [ ] Rendre la barre extérieure (fond charcoal-200, hauteur 4px, border-radius full)
-- [ ] Rendre la barre intérieure (fond accent, largeur dynamique, border-radius full)
-- [ ] Rendre le label "Étape X/5 — [Nom]" au-dessus de la barre
+- [x] Créer `src/components/ProgressBar.tsx`
+- [x] Définir les props : `{ currentStep: number; totalSteps?: number }` (default totalSteps = 5)
+- [x] Définir le tableau des noms d'étapes : `['Problème', 'Contexte', 'Existant', 'Résultat', 'Priorité']`
+- [x] Calculer la largeur de remplissage : `(currentStep / totalSteps) * 100 + '%'`
+- [x] Rendre la barre extérieure (fond charcoal-200, hauteur 4px, border-radius full)
+- [x] Rendre la barre intérieure (fond accent, largeur dynamique, border-radius full)
+- [x] Rendre le label "Étape X/5 — [Nom]" au-dessus de la barre
 
 ### Tâche 2.3.2 — Implémenter la transition animée
-- [ ] Ajouter `transition: width 300ms ease-in-out` sur la barre intérieure
-- [ ] Utiliser les classes Tailwind : `transition-all duration-300 ease-in-out`
-- [ ] Vérifier que la transition est fluide entre chaque changement d'étape
+- [x] Ajouter `transition: width 300ms ease-in-out` sur la barre intérieure
+- [x] Utiliser les classes Tailwind : `transition-all duration-300 ease-in-out`
+- [x] Vérifier que la transition est fluide entre chaque changement d'étape
 
 ### Tâche 2.3.3 — Implémenter le flash émeraude à la complétion
-- [ ] Ajouter un état local `isComplete` (boolean)
-- [ ] Quand `currentStep === totalSteps`, passer `isComplete` à true
-- [ ] Changer la couleur de la barre intérieure de accent à `emerald-500` quand `isComplete`
-- [ ] Utiliser `transition: background-color 300ms` pour l'animation de couleur
-- [ ] Le flash emerald-500 dure ~1 seconde avant la transition vers recap (géré par le parent)
+- [x] Ajouter un état local `isComplete` (boolean)
+- [x] Quand `currentStep === totalSteps`, passer `isComplete` à true
+- [x] Changer la couleur de la barre intérieure de accent à `emerald-500` quand `isComplete`
+- [x] Utiliser `transition: background-color 300ms` pour l'animation de couleur
+- [x] Le flash emerald-500 dure ~1 seconde avant la transition vers recap (géré par le parent)
 
 ### Tâche 2.3.4 — Câbler au composant Chat.tsx
-- [ ] Importer `ProgressBar` dans `Chat.tsx`
-- [ ] Passer `currentStep` (extrait du parsing [STEP:N]) en prop
-- [ ] Positionner la barre au-dessus de l'input dans le layout du chat
-- [ ] Vérifier que la mise à jour du step déclenche bien l'animation
+- [x] Importer `ProgressBar` dans `Chat.tsx`
+- [x] Passer `currentStep` (extrait du parsing [STEP:N]) en prop
+- [x] Positionner la barre au-dessus de l'input dans le layout du chat
+- [x] Vérifier que la mise à jour du step déclenche bien l'animation
 
 ### Tâche 2.3.5 — Responsivité mobile
-- [ ] Sur mobile : la barre est sticky au-dessus de l'input (même position fixe)
-- [ ] Sur desktop : la barre est positionnée en relatif dans le container chat
-- [ ] Vérifier que la barre reste visible quand le clavier virtuel est ouvert
-- [ ] Tester sur les viewports 375px, 390px, 414px
-- [ ] S'assurer que la barre + label ne prennent pas trop de hauteur verticale
+- [x] Sur mobile : la barre est sticky au-dessus de l'input (même position fixe)
+- [x] Sur desktop : la barre est positionnée en relatif dans le container chat
+- [x] Vérifier que la barre reste visible quand le clavier virtuel est ouvert
+- [x] Tester sur les viewports 375px, 390px, 414px
+- [x] S'assurer que la barre + label ne prennent pas trop de hauteur verticale
 
 ## Dev Notes
 
@@ -187,9 +187,25 @@ src/
 ## Dev Agent Record
 
 ### Agent Model Used
+Claude Opus 4.6
 
 ### Debug Log References
+Aucun problème rencontré.
 
 ### Completion Notes List
+- Composant ProgressBar.tsx créé avec logique exportée (STEP_NAMES, getProgressPercentage, getStepName, isComplete) pour testabilité
+- Attributs ARIA ajoutés (role="progressbar", aria-valuenow/min/max, aria-label) pour l'accessibilité
+- Design tokens du projet respectés (--charcoal-200, --charcoal-500, --accent, --emerald-500)
+- Transition CSS Tailwind `transition-all duration-300 ease-in-out` pour animation fluide
+- Flash émeraude via condition `isComplete` → classe `bg-[var(--emerald-500)]`
+- Intégration dans Chat.tsx : ProgressBar positionnée dans le sticky container de l'input, au-dessus du formulaire
+- 12 tests unitaires ajoutés couvrant noms d'étapes, calcul de pourcentage, détection complétion
+- 111/111 tests passent (0 régression), TypeScript OK, ESLint clean
+
+### Change Log
+- 2026-03-05: Implémentation complète de la barre de progression visuelle (tâches 2.3.1 à 2.3.5)
 
 ### File List
+- le-defi-des-5-jours/src/components/ProgressBar.tsx (nouveau)
+- le-defi-des-5-jours/src/components/__tests__/ProgressBar.test.ts (nouveau)
+- le-defi-des-5-jours/src/components/Chat.tsx (modifié — import ProgressBar + intégration dans layout)

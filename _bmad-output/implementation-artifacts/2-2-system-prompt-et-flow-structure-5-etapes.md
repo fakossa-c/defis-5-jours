@@ -1,6 +1,6 @@
 # Story 2.2: System Prompt & Flow Structuré 5 Étapes
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -66,45 +66,45 @@ Then le tag est extrait par regex /\[STEP:(\d)\]/g
 ## Tasks / Subtasks
 
 ### Tâche 2.2.1 — Enrichir src/lib/system-prompt.ts avec le flow complet
-- [ ] Structurer le system prompt en sections : identité, contexte prospect, flow 5 étapes, règles, format de sortie
-- [ ] Section identité : "Tu es l'assistant de Fakossa pour Le Défi 5 Jours..."
-- [ ] Section contexte : injection dynamique de company, role, sector
-- [ ] Section ton : professionnel, chaleureux, vouvoiement systématique
-- [ ] Section flow 5 étapes avec instructions détaillées pour chaque étape :
+- [x] Structurer le system prompt en sections : identité, contexte prospect, flow 5 étapes, règles, format de sortie
+- [x] Section identité : "Tu es l'assistant de Fakossa pour Le Défi 5 Jours..."
+- [x] Section contexte : injection dynamique de company, role, sector
+- [x] Section ton : professionnel, chaleureux, vouvoiement systématique
+- [x] Section flow 5 étapes avec instructions détaillées pour chaque étape :
   - Étape 1 — Problème : "Quel problème cherchez-vous à résoudre ?"
   - Étape 2 — Contexte : "Qui va utiliser la solution ? Combien d'utilisateurs ?"
   - Étape 3 — Existant : "Quelle est la solution actuelle ? Qu'est-ce qui ne fonctionne pas ?"
   - Étape 4 — Résultat : "Quel serait le résultat idéal ?"
   - Étape 5 — Priorité : "Si on ne pouvait faire qu'une chose en 5 jours, ce serait quoi ?"
-- [ ] Section règles : reformulation si vague, pas de promesse techno/prix, max 8-10 échanges
-- [ ] Section tag : instruction d'inclure [STEP:N] dans chaque réponse
-- [ ] Section sortie : instruction de générer un bloc ```json avec BriefData à la fin
+- [x] Section règles : reformulation si vague, pas de promesse techno/prix, max 8-10 échanges
+- [x] Section tag : instruction d'inclure [STEP:N] dans chaque réponse
+- [x] Section sortie : instruction de générer un bloc ```json avec BriefData à la fin
 
 ### Tâche 2.2.2 — Implémenter le parsing du tag [STEP:N] dans Chat.tsx
-- [ ] Ajouter un état `currentStep` (number, initial: 1) dans Chat.tsx
-- [ ] Après chaque message assistant complété (stream terminé), appliquer regex `/\[STEP:(\d)\]/g`
-- [ ] Extraire le numéro N et mettre à jour `currentStep`
-- [ ] Supprimer le tag du contenu affiché (remplacement par chaîne vide)
-- [ ] Gérer le cas où le tag est absent (garder le step actuel)
+- [x] Ajouter un état `currentStep` (number, initial: 1) dans Chat.tsx
+- [x] Après chaque message assistant complété (stream terminé), appliquer regex `/\[STEP:(\d)\]/g`
+- [x] Extraire le numéro N et mettre à jour `currentStep`
+- [x] Supprimer le tag du contenu affiché (remplacement par chaîne vide)
+- [x] Gérer le cas où le tag est absent (garder le step actuel)
 
 ### Tâche 2.2.3 — Implémenter l'extraction du brief JSON
-- [ ] Détecter la présence d'un bloc ```json{...}``` dans la réponse IA finale
-- [ ] Regex d'extraction : `` /```json\s*([\s\S]*?)\s*```/ ``
-- [ ] Parser le JSON extrait avec `JSON.parse()` et valider la structure BriefData
-- [ ] Gérer les erreurs de parsing (JSON malformé) : log erreur, ne pas transitionner
-- [ ] Stocker le BriefData parsé dans l'état parent (page.tsx)
+- [x] Détecter la présence d'un bloc ```json{...}``` dans la réponse IA finale
+- [x] Regex d'extraction : `` /```json\s*([\s\S]*?)\s*```/ ``
+- [x] Parser le JSON extrait avec `JSON.parse()` et valider la structure BriefData
+- [x] Gérer les erreurs de parsing (JSON malformé) : log erreur, ne pas transitionner
+- [x] Stocker le BriefData parsé dans l'état parent (AppShell.tsx via onBriefComplete callback)
 
 ### Tâche 2.2.4 — Implémenter la transition chat → recap
-- [ ] Quand un BriefData valide est extrait, appeler `setAppState('recap')`
-- [ ] Passer le BriefData au composant parent via callback prop `onBriefComplete(brief: BriefData)`
-- [ ] Ajouter un délai de 1s avant la transition pour laisser l'utilisateur lire le dernier message
-- [ ] Supprimer le bloc JSON du dernier message affiché (invisible pour l'utilisateur)
+- [x] Quand un BriefData valide est extrait, appeler `setAppState('recap')`
+- [x] Passer le BriefData au composant parent via callback prop `onBriefComplete(brief: BriefData)`
+- [x] Ajouter un délai de 1s avant la transition pour laisser l'utilisateur lire le dernier message
+- [x] Supprimer le bloc JSON du dernier message affiché (invisible pour l'utilisateur)
 
 ### Tâche 2.2.5 — Gérer la limite d'échanges (8-10 messages)
-- [ ] Compter les messages utilisateur dans le tableau messages
-- [ ] Quand le nombre de messages utilisateur atteint 5+, le system prompt instruit l'IA de conclure
-- [ ] Implémenter un mécanisme d'injection dynamique dans le system prompt : ajouter une instruction de clôture quand la limite approche
-- [ ] Tester que l'IA conclut proprement même si toutes les étapes ne sont pas parfaitement couvertes
+- [x] Compter les messages utilisateur dans le tableau messages
+- [x] Quand le nombre de messages utilisateur atteint 5+, le system prompt instruit l'IA de conclure
+- [x] Implémenter un mécanisme d'injection dynamique dans le system prompt : ajouter une instruction de clôture quand la limite approche
+- [x] Tester que l'IA conclut proprement même si toutes les étapes ne sont pas parfaitement couvertes
 
 ## Dev Notes
 
@@ -209,10 +209,14 @@ function generateSystemPrompt(context: ProspectParams, messageCount: number): st
 src/
   lib/
     system-prompt.ts      # generateSystemPrompt() enrichi avec flow 5 étapes
+    chat-utils.ts         # extractStep(), extractBrief(), cleanContent()
   components/
     Chat.tsx              # Parsing [STEP:N], extraction brief, transition état
+    AppShell.tsx          # briefData state, onBriefComplete handler
   types/
     index.ts              # BriefData type utilisé pour le brief final
+  app/api/chat/
+    route.ts              # Comptage messages utilisateur côté serveur
 ```
 
 ### References
@@ -224,9 +228,30 @@ src/
 ## Dev Agent Record
 
 ### Agent Model Used
+claude-sonnet-4-6
 
 ### Debug Log References
+- Lint error `react-hooks/set-state-in-effect` → résolu en derivant `currentStep` via `useMemo` au lieu de `setState` dans un effect.
+- `STEP_TAG_REGEX` global nécessite `lastIndex = 0` reset avant chaque utilisation dans `extractStep` pour éviter des faux négatifs.
 
 ### Completion Notes List
+- ✅ `system-prompt.ts` reécrit avec 7 sections structurées : [IDENTITÉ], [CONTEXTE PROSPECT], [TON], [FLOW 5 ÉTAPES], [RÈGLES], [FORMAT TAG], [FORMAT SORTIE FINALE]
+- ✅ `chat-utils.ts` créé avec `extractStep()`, `extractBrief()`, `cleanContent()` — testés unitairement
+- ✅ `Chat.tsx` mis à jour : `currentStep` dérivé via `useMemo`, brief extraction dans effect post-stream, prop `onBriefComplete` + `onStepChange` ajoutées, `contact` passé au contexte API
+- ✅ `AppShell.tsx` mis à jour : `briefData` state, `handleBriefComplete` avec transition fade + délai 400ms vers 'recap'
+- ✅ `api/chat/route.ts` mis à jour : comptage `userMessageCount` côté serveur, passé à `generateSystemPrompt`, accepte `contact`
+- ✅ 78 tests passent, lint clean
+- ✅ Code review : 5 issues corrigées (H1 JSON streaming, H2 validation BriefData, M1 contact, M2 seuil 7, M3 test faible)
 
 ### File List
+- `le-defi-des-5-jours/src/lib/system-prompt.ts` (modifié)
+- `le-defi-des-5-jours/src/lib/chat-utils.ts` (créé)
+- `le-defi-des-5-jours/src/lib/__tests__/system-prompt.test.ts` (modifié)
+- `le-defi-des-5-jours/src/lib/__tests__/chat-utils.test.ts` (créé)
+- `le-defi-des-5-jours/src/components/Chat.tsx` (modifié)
+- `le-defi-des-5-jours/src/components/AppShell.tsx` (modifié)
+- `le-defi-des-5-jours/src/app/api/chat/route.ts` (modifié)
+
+### Change Log
+- 2026-03-04 : Story 2.2 implémentée — system prompt structuré 5 étapes, parsing [STEP:N], extraction brief JSON, transition chat→recap
+- 2026-03-05 : Code review — corrigé H1 (JSON invisible pendant streaming), H2 (validation BriefData runtime), M1 (contact injecté dans prompt), M2 (seuil urgence 5→7), M3 (test extractStep renforcé)

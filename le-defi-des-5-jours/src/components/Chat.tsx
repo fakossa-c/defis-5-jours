@@ -3,16 +3,22 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useState, useRef, useEffect, useMemo } from 'react';
-import type { ProspectParams } from '@/types';
+import type { ProspectParams, BriefData } from '@/types';
+import { extractStep, extractBrief, cleanContent } from '@/lib/chat-utils';
 import ChatMessage from './ChatMessage';
+import ProgressBar from './ProgressBar';
 
 type ChatProps = {
   params: ProspectParams;
+  onBriefComplete: (brief: BriefData) => void;
+  onStepChange?: (step: number) => void;
 };
 
-export default function Chat({ params }: ChatProps) {
+export default function Chat({ params, onBriefComplete, onStepChange }: ChatProps) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const processedMessageIds = useRef<Set<string>>(new Set());
+  const briefTransitionRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const transport = useMemo(
     () =>
@@ -23,10 +29,20 @@ export default function Chat({ params }: ChatProps) {
             company: params.company ?? '',
             role: params.role ?? '',
             sector: params.sector ?? '',
+            contact: params.contact ?? '',
           },
         },
+        fetch: async (url, options) => {
+          const response = await globalThis.fetch(url as string, options as RequestInit);
+          if (response.status === 429) {
+            const err = new Error('RATE_LIMIT') as Error & { status: number };
+            err.status = 429;
+            throw err;
+          }
+          return response;
+        },
       }),
-    [params.company, params.role, params.sector],
+    [params.company, params.role, params.sector, params.contact],
   );
 
   const { messages, sendMessage, status, error, regenerate } = useChat({
@@ -35,6 +51,32 @@ export default function Chat({ params }: ChatProps) {
 
   const isLoading = status === 'submitted' || status === 'streaming';
   const hasSentInitial = useRef(false);
+
+  const rateLimitMessage = useMemo(() => {
+    if (!error) return null;
+    const status = (error as Error & { status?: number }).status;
+    if (status === 429 || error.message === 'RATE_LIMIT') {
+      return 'Beaucoup de demandes, revenez dans quelques minutes';
+    }
+    return null;
+  }, [error]);
+
+  const isRateLimited = rateLimitMessage !== null;
+
+  // Derive currentStep from the last assistant message that has a [STEP:N] tag
+  const currentStep = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'assistant') {
+        const raw = messages[i].parts
+          .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+          .map((p) => p.text)
+          .join('');
+        const { step } = extractStep(raw);
+        if (step !== null) return step;
+      }
+    }
+    return 1;
+  }, [messages]);
 
   useEffect(() => {
     if (!hasSentInitial.current && messages.length === 0) {
@@ -46,6 +88,41 @@ export default function Chat({ params }: ChatProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Process completed assistant messages: notify step change + detect brief
+  useEffect(() => {
+    if (status === 'streaming' || status === 'submitted') return;
+
+    const lastMessage = messages[messages.length - 1];
+    if (!lastMessage || lastMessage.role !== 'assistant') return;
+    if (processedMessageIds.current.has(lastMessage.id)) return;
+
+    processedMessageIds.current.add(lastMessage.id);
+
+    const rawContent = lastMessage.parts
+      .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+      .map((p) => p.text)
+      .join('');
+
+    // Notify parent of step change
+    const { step } = extractStep(rawContent);
+    if (step !== null) onStepChange?.(step);
+
+    // Extract brief and schedule transition
+    const brief = extractBrief(rawContent);
+    if (brief) {
+      briefTransitionRef.current = setTimeout(() => {
+        onBriefComplete(brief);
+      }, 1000);
+    }
+  }, [status, messages, onBriefComplete, onStepChange]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (briefTransitionRef.current) clearTimeout(briefTransitionRef.current);
+    };
+  }, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,15 +138,19 @@ export default function Chat({ params }: ChatProps) {
       <div className="flex-1 overflow-y-auto px-[var(--space-md)] py-[var(--space-md)]" role="log" aria-live="polite">
         <div className="mx-auto flex max-w-3xl flex-col gap-[var(--space-md)]">
           {messages.map((message, index) => {
-            const textContent = message.parts
+            const rawContent = message.parts
               .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
               .map((p) => p.text)
               .join('');
+
+            const displayContent =
+              message.role === 'assistant' ? cleanContent(rawContent) : rawContent;
+
             return (
               <ChatMessage
                 key={message.id}
                 role={message.role as 'user' | 'assistant'}
-                content={textContent}
+                content={displayContent}
                 isStreaming={
                   status === 'streaming' &&
                   message.role === 'assistant' &&
@@ -79,8 +160,16 @@ export default function Chat({ params }: ChatProps) {
             );
           })}
 
-          {/* Error banner */}
-          {error && (
+          {/* Rate limit message - inline amical */}
+          {rateLimitMessage && (
+            <div className="mx-auto flex items-center gap-[var(--space-sm)] rounded-[var(--radius-sm)] bg-[var(--cream-100)] px-[var(--space-md)] py-[var(--space-sm)] text-[var(--charcoal-900)]">
+              <span className="text-base">&#128336;</span>
+              <span className="flex-1 text-sm">{rateLimitMessage}</span>
+            </div>
+          )}
+
+          {/* Error banner (non-rate-limit errors only) */}
+          {error && !isRateLimited && (
             <div className="flex items-center gap-[var(--space-sm)] rounded-[var(--radius-sm)] bg-[var(--red-500)] px-[var(--space-md)] py-[var(--space-sm)] text-white">
               <span className="flex-1 text-sm">Oups, un souci technique. Réessayez.</span>
               <button
@@ -96,6 +185,13 @@ export default function Chat({ params }: ChatProps) {
         </div>
       </div>
 
+      {/* Progress bar - between messages and input */}
+      <div className="border-t border-[var(--charcoal-200)] bg-[var(--cream-50)] px-[var(--space-md)] py-[var(--space-xs)]">
+        <div className="mx-auto max-w-3xl">
+          <ProgressBar currentStep={currentStep} />
+        </div>
+      </div>
+
       {/* Input area - sticky bottom */}
       <div className="sticky bottom-0 border-t border-[var(--charcoal-200)] bg-[var(--cream-50)] px-[var(--space-md)] py-[var(--space-sm)]">
         <form
@@ -107,11 +203,11 @@ export default function Chat({ params }: ChatProps) {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Tapez votre message..."
             className="flex-1 rounded-[var(--radius-full)] border border-[var(--charcoal-200)] bg-white px-[var(--space-md)] py-[var(--space-sm)] text-[15px] outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
-            disabled={isLoading}
+            disabled={isLoading || isRateLimited}
           />
           <button
             type="submit"
-            disabled={isLoading || !input.trim()}
+            disabled={isLoading || isRateLimited || !input.trim()}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-white transition-opacity disabled:opacity-40"
             aria-label="Envoyer"
           >
@@ -122,6 +218,11 @@ export default function Chat({ params }: ChatProps) {
           </button>
         </form>
       </div>
+
+      {/* Hidden step tracker for Story 2.3 */}
+      <span data-testid="current-step" className="sr-only" aria-hidden="true">
+        {currentStep}
+      </span>
     </div>
   );
 }

@@ -40,4 +40,58 @@ describe('generateSystemPrompt', () => {
     expect(prompt).toContain('CTO');
     expect(prompt).toContain('fintech');
   });
+
+  // Nouveaux tests pour le flow 5 étapes
+  it('contient les 5 sections obligatoires', () => {
+    const prompt = generateSystemPrompt({ company: '', role: '', sector: '' });
+    expect(prompt).toContain('[IDENTITÉ]');
+    expect(prompt).toContain('[FLOW 5 ÉTAPES]');
+    expect(prompt).toContain('[RÈGLES]');
+    expect(prompt).toContain('[FORMAT TAG]');
+    expect(prompt).toContain('[FORMAT SORTIE FINALE]');
+  });
+
+  it('contient l\'instruction [STEP:N]', () => {
+    const prompt = generateSystemPrompt({ company: '', role: '', sector: '' });
+    expect(prompt).toContain('[STEP:N]');
+  });
+
+  it('contient les 5 étapes du flow', () => {
+    const prompt = generateSystemPrompt({ company: '', role: '', sector: '' });
+    expect(prompt).toContain('Étape 1');
+    expect(prompt).toContain('Étape 2');
+    expect(prompt).toContain('Étape 3');
+    expect(prompt).toContain('Étape 4');
+    expect(prompt).toContain('Étape 5');
+  });
+
+  it('contient l\'instruction de vouvoiement', () => {
+    const prompt = generateSystemPrompt({ company: '', role: '', sector: '' });
+    expect(prompt).toContain('vouvoiement');
+  });
+
+  it('ajoute une instruction urgente quand messageCount >= 7', () => {
+    const prompt = generateSystemPrompt({ company: '', role: '', sector: '' }, 7);
+    expect(prompt).toContain('[INSTRUCTION URGENTE]');
+  });
+
+  it('ne contient pas d\'instruction urgente quand messageCount < 7', () => {
+    const prompt = generateSystemPrompt({ company: '', role: '', sector: '' }, 6);
+    expect(prompt).not.toContain('[INSTRUCTION URGENTE]');
+  });
+
+  it('n\'ajoute pas l\'instruction urgente par défaut (messageCount = 0)', () => {
+    const prompt = generateSystemPrompt({ company: '', role: '', sector: '' });
+    expect(prompt).not.toContain('[INSTRUCTION URGENTE]');
+  });
+
+  it('injecte le nom du contact quand fourni', () => {
+    const prompt = generateSystemPrompt({ company: '', role: '', sector: '', contact: 'Jean Dupont' });
+    expect(prompt).toContain('Jean Dupont');
+  });
+
+  it('demande le prénom si contact absent', () => {
+    const prompt = generateSystemPrompt({ company: '', role: '', sector: '' });
+    expect(prompt).toContain('prénom');
+  });
 });
