@@ -2,11 +2,12 @@
 
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import type { ProspectParams, BriefData } from '@/types';
 import { extractStep, extractBrief, cleanContent } from '@/lib/chat-utils';
 import ChatMessage from './ChatMessage';
 import ProgressBar from './ProgressBar';
+import ProjectCards, { type ProjectType } from './ProjectCards';
 
 type ChatProps = {
   params: ProspectParams;
@@ -16,7 +17,11 @@ type ChatProps = {
 
 export default function Chat({ params, onBriefComplete, onStepChange }: ChatProps) {
   const [input, setInput] = useState('');
+  const [chatPhase, setChatPhase] = useState<'initial' | 'active'>('initial');
+  const [isGeneratingIdea, setIsGeneratingIdea] = useState(false);
+  const [loadingType, setLoadingType] = useState<ProjectType | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const processedMessageIds = useRef<Set<string>>(new Set());
   const briefTransitionRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -50,7 +55,6 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
   });
 
   const isLoading = status === 'submitted' || status === 'streaming';
-  const hasSentInitial = useRef(false);
 
   const rateLimitMessage = useMemo(() => {
     if (!error) return null;
@@ -77,12 +81,17 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
     return 1;
   }, [messages]);
 
+  // Auto-resize textarea
+  const resizeTextarea = useCallback(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 200) + 'px';
+  }, []);
+
   useEffect(() => {
-    if (!hasSentInitial.current && messages.length === 0) {
-      hasSentInitial.current = true;
-      sendMessage({ text: 'Bonjour, je suis pret a commencer le Defi 5 Jours.' });
-    }
-  }, [messages.length, sendMessage]);
+    resizeTextarea();
+  }, [input, resizeTextarea]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -123,15 +132,137 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
     e.preventDefault();
     const text = input.trim();
     if (!text || isLoading) return;
+    if (chatPhase === 'initial') {
+      setChatPhase('active');
+    }
     setInput('');
     sendMessage({ text });
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
   }
 
-  // Filter out the initial user message (auto-sent)
-  const visibleMessages = messages.filter(
-    (m, i) => !(i === 0 && m.role === 'user'),
-  );
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  }
 
+  async function handleCardClick(type: ProjectType) {
+    setIsGeneratingIdea(true);
+    setLoadingType(type);
+    try {
+      const res = await fetch('/api/ideas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectType: type,
+          context: {
+            company: params.company ?? '',
+            sector: params.sector ?? '',
+            contact: params.contact ?? '',
+          },
+        }),
+      });
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      setInput(data.idea);
+    } catch {
+      const typeLabels: Record<ProjectType, string> = {
+        'site-web': 'site web',
+        'mvp': 'MVP',
+        'automatisation': 'automatisation',
+        'dashboard': 'dashboard',
+        'app-mobile': 'application mobile',
+      };
+      setInput(`Je voudrais un projet de type ${typeLabels[type]}`);
+    } finally {
+      setIsGeneratingIdea(false);
+      setLoadingType(null);
+      textareaRef.current?.focus();
+    }
+  }
+
+  // All messages are visible (no auto-sent hidden message)
+  const visibleMessages = messages;
+
+  // ── Initial Phase ──
+  if (chatPhase === 'initial') {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center px-4">
+        <div className="flex w-full max-w-2xl flex-col items-center gap-6">
+          {/* Progress bar */}
+          <div className="w-full max-w-md">
+            <ProgressBar currentStep={currentStep} />
+          </div>
+
+          {/* Title */}
+          <h1
+            className="animate-fade-in text-center"
+            style={{
+              font: 'var(--font-h1)',
+              color: 'var(--charcoal-900)',
+            }}
+          >
+            Quel projet avez-vous en t&ecirc;te ?
+          </h1>
+
+          {/* Textarea */}
+          <form onSubmit={handleSubmit} className="w-full">
+            <div className="relative">
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Decrivez votre projet..."
+                rows={3}
+                className="chat-input textarea-resize w-full resize-none bg-white px-5 py-4 text-[15px] outline-none"
+                style={{
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--charcoal-200)',
+                  boxShadow: 'var(--shadow-md)',
+                }}
+                disabled={isLoading || isRateLimited || isGeneratingIdea}
+              />
+              <button
+                type="submit"
+                disabled={isLoading || isRateLimited || !input.trim() || isGeneratingIdea}
+                className="send-btn absolute bottom-3 right-3 flex shrink-0 items-center justify-center rounded-full text-white disabled:opacity-40"
+                style={{
+                  width: 40,
+                  height: 40,
+                  background: 'var(--accent)',
+                  boxShadow: '0 2px 10px var(--accent-light, rgba(249,103,67,0.25))',
+                }}
+                aria-label="Envoyer"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </button>
+            </div>
+          </form>
+
+          {/* Project cards */}
+          <ProjectCards
+            onCardClick={handleCardClick}
+            disabled={isLoading || isRateLimited}
+            loadingType={loadingType}
+          />
+        </div>
+
+        <span data-testid="current-step" className="sr-only" aria-hidden="true">
+          {currentStep}
+        </span>
+      </div>
+    );
+  }
+
+  // ── Active Phase ──
   return (
     <div className="flex flex-1 flex-col">
       {/* Messages area */}
@@ -141,7 +272,6 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
         aria-live="polite"
       >
         <div className="mx-auto flex max-w-3xl flex-col gap-5">
-          {/* Welcome message if no visible messages yet and loading */}
           {visibleMessages.length === 0 && isLoading && (
             <div className="msg-enter flex items-center gap-3">
               <div className="avatar-ring shrink-0" style={{ width: 32, height: 32 }}>
@@ -266,13 +396,16 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
           className="mx-auto flex max-w-3xl items-end gap-3"
         >
           <div className="relative flex-1">
-            <input
+            <textarea
+              ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Tapez votre message..."
-              className="chat-input w-full bg-white px-5 py-3 text-[15px] outline-none"
+              rows={1}
+              className="chat-input textarea-resize w-full resize-none bg-white px-5 py-3 text-[15px] outline-none"
               style={{
-                borderRadius: 'var(--radius-full)',
+                borderRadius: 'var(--radius-lg)',
                 border: '1px solid var(--charcoal-200)',
                 boxShadow: 'var(--shadow-sm)',
               }}

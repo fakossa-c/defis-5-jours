@@ -17,7 +17,7 @@ export default function Header({ company }: HeaderProps) {
         borderBottom: '1px solid rgba(212, 207, 200, 0.4)',
       }}
     >
-      <div className="mx-auto flex max-w-3xl items-center gap-3 px-5 py-3">
+      <div className="flex items-center gap-3 px-5 py-3">
         {/* Avatar with ring */}
         <div className="avatar-ring" style={{ width: 36, height: 36, flexShrink: 0 }}>
           {imgError ? (

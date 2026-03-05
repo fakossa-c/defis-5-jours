@@ -291,3 +291,84 @@ body {
 .chat-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--charcoal-400);
 }
+
+/* ── Textarea auto-resize transition ──────────────────── */
+.textarea-resize {
+  transition: height 150ms ease;
+}
+
+/* ── Project cards ────────────────────────────────────── */
+.project-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 639px) {
+  .project-cards-grid {
+    grid-template-columns: 1fr;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+
+  .project-cards-grid > * {
+    min-width: 160px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+}
+
+.project-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  animation: card-fade-in 400ms cubic-bezier(.22,1,.36,1) both;
+}
+
+.project-card:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent);
+}
+
+.project-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.project-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--cream-200);
+}
+
+.project-card-label {
+  font: var(--font-small);
+  font-weight: 600;
+  color: var(--charcoal-900);
+}
+
+.project-card-desc {
+  font: var(--font-caption);
+  color: var(--charcoal-500);
+  text-align: center;
+}
+
+@keyframes card-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
