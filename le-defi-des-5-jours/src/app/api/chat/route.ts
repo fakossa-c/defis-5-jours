@@ -1,4 +1,4 @@
-import { streamText } from 'ai';
+import { streamText, convertToModelMessages } from 'ai';
 import { google } from '@ai-sdk/google';
 import { generateSystemPrompt } from '@/lib/system-prompt';
 import { checkRateLimit, getRateLimitHeaders } from '@/lib/rate-limit';
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
     const result = streamText({
       model: google('gemini-2.5-flash'),
       system: systemPrompt,
-      messages,
+      messages: await convertToModelMessages(messages as Parameters<typeof convertToModelMessages>[0]),
     });
 
     return result.toUIMessageStreamResponse({
