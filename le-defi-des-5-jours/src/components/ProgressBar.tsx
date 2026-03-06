@@ -1,6 +1,6 @@
 'use client';
 
-export const STEP_NAMES = ['Probl\u00e8me', 'Contexte', 'Existant', 'R\u00e9sultat', 'Priorit\u00e9'];
+export const STEP_NAMES = ['Projet', 'Brief', 'Engagement'];
 
 export function getProgressPercentage(currentStep: number, totalSteps: number): number {
   if (totalSteps <= 0) return 0;

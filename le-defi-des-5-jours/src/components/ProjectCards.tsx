@@ -81,7 +81,7 @@ export default function ProjectCards({ onCardClick, disabled, loadingType }: Pro
             disabled={disabled || !!loadingType}
             className="project-card glass"
             style={{
-              animationDelay: `${index * 80}ms`,
+              animationDelay: `${index * 120}ms`,
             }}
           >
             <div
@@ -100,6 +100,9 @@ export default function ProjectCards({ onCardClick, disabled, loadingType }: Pro
             </div>
             <span className="project-card-label">{project.label}</span>
             <span className="project-card-desc">{project.description}</span>
+            <svg className="project-card-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--charcoal-400)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
           </button>
         );
       })}

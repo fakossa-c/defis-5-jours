@@ -119,18 +119,30 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
     }
   }
 
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
   // ── Step 1: Choose project type ──
   if (step === 1) {
     return (
       <div className="flex flex-1 flex-col px-4 sm:px-6" style={{ justifyContent: 'center', paddingBottom: '15vh' }}>
         <div className="mx-auto flex w-full max-w-[42rem] flex-col items-center gap-6">
-          <ProgressBar currentStep={1} hideLabels />
-          <h1
-            className="animate-fade-in text-center text-2xl font-bold sm:text-3xl"
-            style={{ color: 'var(--charcoal-900)' }}
-          >
-            Quel projet avez-vous en t&#234;te ?
-          </h1>
+          <ProgressBar currentStep={1} totalSteps={3} />
+          <div className="w-full animate-fade-in text-center">
+            <h1
+              className="text-2xl font-bold sm:text-3xl"
+              style={{ color: 'var(--charcoal-900)' }}
+            >
+              Quel projet avez-vous{' '}
+              <span style={{ color: 'var(--accent)' }}>en t&#234;te</span>
+              {' '}?
+            </h1>
+            <p
+              className="mx-auto mt-3 max-w-[28rem] text-[15px]"
+              style={{ color: 'var(--charcoal-500)' }}
+            >
+              Choisissez un type de projet pour d&#233;couvrir votre brief personnalis&#233;
+            </p>
+          </div>
           <ProjectCards
             onCardClick={handleCardClick}
             disabled={loadingBrief}
@@ -146,128 +158,144 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
     return (
       <div className="flex flex-1 flex-col overflow-y-auto px-4 py-8 sm:px-6">
         <div className="mx-auto w-full max-w-[42rem]">
-          <ProgressBar currentStep={2} hideLabels />
+          <ProgressBar currentStep={2} totalSteps={3} />
 
-          <div className="mt-6 animate-fade-in">
+          {/* Hero title */}
+          <div className="animate-slide-up stagger-1 mt-8">
             <h2
-              className="text-xl font-bold sm:text-2xl"
+              className="accent-underline text-2xl font-bold sm:text-3xl"
               style={{ color: 'var(--charcoal-900)' }}
             >
               {brief.title}
             </h2>
             <p
-              className="mt-3 text-[15px] leading-relaxed"
-              style={{ color: 'var(--charcoal-700)' }}
+              className="mt-5 text-base leading-relaxed"
+              style={{ color: 'var(--charcoal-700)', letterSpacing: '0.01em' }}
             >
               {brief.summary}
             </p>
+          </div>
 
-            {/* Deliverables */}
-            <div className="mt-6">
-              <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--accent)' }}>
-                Livrables
-              </h3>
-              <ul className="mt-2 space-y-2">
-                {brief.deliverables.map((d, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm" style={{ color: 'var(--charcoal-700)' }}>
-                    <span style={{ color: 'var(--accent)', marginTop: 2 }}>&#10003;</span>
-                    {d}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Day by day */}
-            <div className="mt-6">
-              <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--accent)' }}>
-                Planning 5 jours
-              </h3>
-              <div className="mt-3 space-y-3">
-                {brief.day_by_day.map((day) => (
-                  <div
-                    key={day.day}
-                    className="glass"
-                    style={{ borderRadius: 'var(--radius-sm)', padding: '12px 16px' }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white"
-                        style={{ background: 'var(--accent)' }}
-                      >
-                        {day.day}
-                      </span>
-                      <span className="text-sm font-semibold" style={{ color: 'var(--charcoal-900)' }}>
-                        {day.label}
-                      </span>
-                    </div>
-                    <ul className="mt-2 space-y-1 pl-8">
-                      {day.tasks.map((t, i) => (
-                        <li key={i} className="text-xs" style={{ color: 'var(--charcoal-500)' }}>
-                          {t}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Stack */}
-            <div className="mt-6 flex flex-wrap gap-2">
-              {brief.stack.map((s) => (
-                <span
-                  key={s}
-                  className="rounded-full px-3 py-1 text-xs font-medium"
+          {/* Deliverables */}
+          <div className="animate-slide-up stagger-2 mt-8">
+            <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--accent)' }}>
+              Livrables
+            </h3>
+            <div className="deliverables-grid mt-3">
+              {brief.deliverables.map((d, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 text-sm"
                   style={{
-                    background: 'var(--cream-200)',
+                    background: 'var(--cream-100)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '10px 14px',
                     color: 'var(--charcoal-700)',
                   }}
                 >
-                  {s}
-                </span>
+                  <span style={{ color: 'var(--accent)', marginTop: 1, fontWeight: 700, flexShrink: 0 }}>&#10003;</span>
+                  {d}
+                </div>
               ))}
             </div>
+          </div>
 
-            {/* Notes */}
-            <div className="mt-8">
-              <label className="text-sm font-medium" style={{ color: 'var(--charcoal-700)' }}>
-                Quelque chose &#224; ajouter ? (optionnel)
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Contraintes particulieres, preferences, details..."
-                rows={3}
-                className="chat-input mt-2 w-full resize-none bg-white px-4 py-3 text-sm outline-none"
-                style={{
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--charcoal-200)',
-                }}
-              />
+          {/* Day by day timeline */}
+          <div className="animate-slide-up stagger-3 mt-8">
+            <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--accent)' }}>
+              Planning 5 jours
+            </h3>
+            <div className="timeline-grid mt-3">
+              {brief.day_by_day.map((day) => (
+                <div
+                  key={day.day}
+                  className="timeline-card glass"
+                  style={{ borderRadius: 'var(--radius-sm)', padding: '14px 16px' }}
+                >
+                  <div className="flex items-center gap-2 sm:flex-col sm:items-start sm:gap-1">
+                    <span
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white"
+                      style={{ background: 'var(--accent)', flexShrink: 0 }}
+                    >
+                      {day.day}
+                    </span>
+                    <span className="text-sm font-semibold" style={{ color: 'var(--charcoal-900)' }}>
+                      {day.label}
+                    </span>
+                  </div>
+                  <ul className="mt-2 space-y-1 sm:mt-2">
+                    {day.tasks.map((t, i) => (
+                      <li key={i} className="text-xs leading-relaxed" style={{ color: 'var(--charcoal-500)' }}>
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
+          </div>
 
-            {/* Actions */}
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <button
-                onClick={() => goToStep(3)}
-                className="cta-button flex-1 rounded-xl px-6 py-3 text-sm font-semibold text-white"
-                style={{ background: 'var(--accent)' }}
-              >
-                Ca me va, on continue
-              </button>
-              <button
-                onClick={handleAnotherBrief}
-                disabled={loadingBrief}
-                className="cta-button rounded-xl px-6 py-3 text-sm font-semibold disabled:opacity-50"
+          {/* Stack tags */}
+          <div className="animate-slide-up stagger-4 mt-8 flex flex-wrap gap-2">
+            {brief.stack.map((s) => (
+              <span
+                key={s}
+                className="rounded-full px-3 py-1 text-xs font-medium"
                 style={{
                   background: 'var(--cream-100)',
                   color: 'var(--charcoal-700)',
-                  border: '1px solid var(--charcoal-200)',
+                  border: '1px solid var(--cream-300)',
+                  boxShadow: '0 1px 2px rgba(42,39,36,0.04)',
                 }}
               >
-                {loadingBrief ? 'Chargement...' : 'Voir un autre brief'}
-              </button>
-            </div>
+                {s}
+              </span>
+            ))}
+          </div>
+
+          {/* Notes */}
+          <div className="animate-slide-up stagger-5 mt-8">
+            <label className="text-sm font-medium" style={{ color: 'var(--charcoal-700)' }}>
+              Quelque chose &#224; ajouter ? (optionnel)
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Contraintes particulieres, preferences, details..."
+              rows={3}
+              className="chat-input mt-2 w-full resize-none bg-white px-4 py-3 text-sm outline-none"
+              style={{
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--charcoal-200)',
+              }}
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="animate-slide-up stagger-5 mt-6 flex flex-col gap-3 sm:flex-row">
+            <button
+              onClick={() => goToStep(3)}
+              className="cta-button flex-1 rounded-xl px-6 py-4 text-base font-bold text-white"
+              style={{ background: 'var(--accent)' }}
+            >
+              Ca me va, on continue
+            </button>
+            <button
+              onClick={handleAnotherBrief}
+              disabled={loadingBrief}
+              className="cta-button flex items-center justify-center gap-2 rounded-xl px-6 py-4 text-sm font-semibold disabled:opacity-50"
+              style={{
+                background: 'var(--cream-100)',
+                color: 'var(--charcoal-700)',
+                border: '1px solid var(--charcoal-200)',
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+              </svg>
+              {loadingBrief ? 'Chargement...' : 'Voir un autre brief'}
+            </button>
           </div>
         </div>
       </div>
@@ -279,16 +307,16 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
     return (
       <div className="flex flex-1 flex-col overflow-y-auto px-4 py-8 sm:px-6">
         <div className="mx-auto w-full max-w-[42rem]">
-          <ProgressBar currentStep={3} hideLabels />
+          <ProgressBar currentStep={3} totalSteps={3} />
 
           <div className="mt-6 animate-fade-in">
             <h2
-              className="text-xl font-bold sm:text-2xl"
+              className="accent-underline text-xl font-bold sm:text-2xl"
               style={{ color: 'var(--charcoal-900)' }}
             >
-              Derniere etape
+              Derni&#232;re &#233;tape
             </h2>
-            <p className="mt-2 text-[15px]" style={{ color: 'var(--charcoal-500)' }}>
+            <p className="mt-5 text-[15px]" style={{ color: 'var(--charcoal-500)' }}>
               Je construis votre projet en 5 jours. Pour vous recontacter avec le resultat, j&apos;ai besoin de quelques infos.
             </p>
 
@@ -323,23 +351,31 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
                   { value: 'visio' as const, label: 'Visio (15 min)', icon: '\uD83C\uDFA5' },
                   { value: 'email' as const, label: 'Par email', icon: '\u2709\uFE0F' },
                   { value: 'telephone' as const, label: 'Telephone', icon: '\uD83D\uDCDE' },
-                ]).map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setContactMethod(option.value)}
-                    className="glass flex flex-1 items-center gap-2 px-4 py-3 text-sm font-medium transition-all"
-                    style={{
-                      borderRadius: 'var(--radius-md)',
-                      borderColor: contactMethod === option.value ? 'var(--accent)' : 'transparent',
-                      borderWidth: 2,
-                      borderStyle: 'solid',
-                      color: contactMethod === option.value ? 'var(--accent)' : 'var(--charcoal-700)',
-                    }}
-                  >
-                    <span>{option.icon}</span>
-                    {option.label}
-                  </button>
-                ))}
+                ]).map((option) => {
+                  const isSelected = contactMethod === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      onClick={() => setContactMethod(option.value)}
+                      className="glass flex flex-1 items-center gap-3 px-4 py-4 text-sm font-medium transition-all"
+                      style={{
+                        borderRadius: 'var(--radius-md)',
+                        borderColor: isSelected ? 'var(--accent)' : 'transparent',
+                        borderWidth: 2,
+                        borderStyle: 'solid',
+                        color: isSelected ? 'var(--accent)' : 'var(--charcoal-700)',
+                      }}
+                    >
+                      <span className="text-lg">{option.icon}</span>
+                      <span className="text-left">{option.label}</span>
+                      {isSelected && (
+                        <svg className="ml-auto" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -348,7 +384,7 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
               className="mt-8 rounded-xl px-5 py-4"
               style={{
                 background: 'var(--cream-200)',
-                border: '1px solid var(--cream-300)',
+                borderLeft: '4px solid var(--accent)',
               }}
             >
               <p className="text-sm font-medium" style={{ color: 'var(--charcoal-900)' }}>
@@ -376,10 +412,9 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
             <button
               onClick={handleSubmit}
               disabled={submitting || !email.trim()}
-              className="cta-button mt-6 w-full rounded-xl px-6 py-4 text-base font-bold text-white disabled:opacity-50"
+              className={`cta-button mt-6 w-full rounded-xl px-6 py-4 text-base font-bold text-white disabled:opacity-50${isEmailValid && !submitting ? ' pulse-glow' : ''}`}
               style={{
                 background: 'var(--accent)',
-                boxShadow: '0 4px 20px var(--accent-light, rgba(249,103,67,0.3))',
               }}
             >
               {submitting ? 'Envoi en cours...' : 'C\'est parti, je joue le jeu'}
@@ -400,21 +435,48 @@ export default function Chat({ params, onBriefComplete, onStepChange }: ChatProp
 
   // ── Success ──
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-4">
-      <div className="mx-auto max-w-md text-center animate-scale-in">
-        <div className="text-5xl">&#127881;</div>
+    <div
+      className="flex flex-1 flex-col items-center justify-center px-4"
+      style={{
+        background: 'radial-gradient(circle at 50% 40%, rgba(249,103,67,0.06) 0%, transparent 60%)',
+      }}
+    >
+      <div className="mx-auto max-w-[28rem] text-center">
+        {/* Animated check circle */}
+        <div
+          className="mx-auto flex items-center justify-center"
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: '50%',
+            background: 'var(--accent)',
+            animation: 'circle-fill 500ms cubic-bezier(.22,1,.36,1) both',
+          }}
+        >
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline
+              points="20 6 9 17 4 12"
+              style={{
+                strokeDasharray: 24,
+                strokeDashoffset: 0,
+                animation: 'draw-check 400ms ease-out 300ms both',
+              }}
+            />
+          </svg>
+        </div>
+
         <h2
-          className="mt-4 text-2xl font-bold"
+          className="animate-slide-up stagger-1 mt-6 text-2xl font-bold"
           style={{ color: 'var(--charcoal-900)' }}
         >
           C&apos;est parti !
         </h2>
-        <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--charcoal-500)' }}>
-          Je me mets au travail des aujourd&apos;hui. Rendez-vous dans 5 jours
-          pour decouvrir votre <strong>{brief?.title}</strong>.
+        <p className="animate-slide-up stagger-2 mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--charcoal-500)' }}>
+          Je me mets au travail d&#232;s aujourd&apos;hui. Rendez-vous dans 5 jours
+          pour d&#233;couvrir votre <strong>{brief?.title}</strong>.
         </p>
-        <p className="mt-4 text-sm" style={{ color: 'var(--charcoal-400)' }}>
-          Un email de confirmation a ete envoye a <strong>{email}</strong>.
+        <p className="animate-slide-up stagger-3 mt-4 text-sm" style={{ color: 'var(--charcoal-400)' }}>
+          Un email de confirmation a &#233;t&#233; envoy&#233; &#224; <strong>{email}</strong>.
         </p>
       </div>
     </div>

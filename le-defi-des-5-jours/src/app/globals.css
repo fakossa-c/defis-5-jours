@@ -327,8 +327,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 14px 8px;
+  gap: 8px;
+  padding: 18px 12px;
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
@@ -336,8 +336,8 @@ body {
 }
 
 .project-card:not(:disabled):hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
   border-color: var(--accent);
 }
 
@@ -350,14 +350,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: var(--cream-200);
+  background: linear-gradient(135deg, var(--cream-200), var(--cream-100));
 }
 
 .project-card-label {
-  font: var(--font-small);
+  font-size: 15px;
+  line-height: 1.4;
   font-weight: 600;
   color: var(--charcoal-900);
 }
@@ -371,4 +372,98 @@ body {
 @keyframes card-fade-in {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Premium redesign additions ──────────────────────── */
+
+/* Accent underline for section titles */
+.accent-underline::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin-top: 12px;
+}
+
+/* Stagger animation delays for brief sections */
+.stagger-1 { animation-delay: 100ms; }
+.stagger-2 { animation-delay: 200ms; }
+.stagger-3 { animation-delay: 300ms; }
+.stagger-4 { animation-delay: 400ms; }
+.stagger-5 { animation-delay: 500ms; }
+
+/* Deliverables grid */
+.deliverables-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+@media (min-width: 640px) {
+  .deliverables-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Timeline grid */
+.timeline-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 640px) {
+  .timeline-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+}
+
+/* Timeline connector (desktop only) */
+@media (min-width: 640px) {
+  .timeline-card {
+    position: relative;
+  }
+  .timeline-card:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 28px;
+    right: -5px;
+    width: 10px;
+    height: 2px;
+    background: var(--charcoal-200);
+  }
+}
+
+/* Check animation for success screen */
+@keyframes draw-check {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes circle-fill {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Pulse glow on valid submit button */
+@keyframes subtle-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(249,103,67,0.3); }
+  50% { box-shadow: 0 4px 30px rgba(249,103,67,0.5); }
+}
+
+.pulse-glow {
+  animation: subtle-pulse 2s ease-in-out infinite;
+}
+
+/* Project card chevron */
+.project-card-chevron {
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.project-card:not(:disabled):hover .project-card-chevron {
+  opacity: 1;
+  transform: translateY(0);
 }
